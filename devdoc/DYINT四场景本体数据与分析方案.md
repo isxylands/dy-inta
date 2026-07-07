@@ -18,9 +18,9 @@
 
 - 场景 1“霍尔木兹/阿曼湾商船安全”天然会用到场景 4 的全球导航卫星系统（Global Navigation Satellite System，简称 GNSS）和船舶自动识别系统（Automatic Identification System，简称 AIS）干扰证据。
 - 场景 2“区域导弹/无人机袭击态势”与场景 3“关键基础设施损伤/恢复”会共享同一批设施关注区（Area of Interest，简称 AOI）、火点、影像、官方通告和开源情报。
-- 四个场景都需要同一套一级异常预警（L1）、二级验证确认（L2）、三级融合报告（L3）、证据链、置信度、关注区和实体本体。
+- 四个场景都需要同一套一级异常预警（L1）、二级验证确认（L2）、三级融合报告（L3）、证据链、置信度、关注区、资产对象和关系本体。
 
-因此推荐的工程策略是：保留 4 个场景包用于销售和叙事，但底层只建设一套统一的“事件、实体、证据、影像、验证、报告”本体。演示编排上优先做两条主线：
+因此推荐的工程策略是：保留 4 个场景包用于销售和叙事，但底层只建设一套统一的“事件、资产、组织、服务、证据、影像、验证、报告”本体。演示编排上优先做两条主线：
 
 1. **主线 A：海上通道安全**，把场景 1 和场景 4 合并演示。
 2. **主线 B：关键基础设施影响评估**，把场景 2 的袭击态势和场景 3 的损伤/恢复串起来演示。
@@ -106,7 +106,7 @@
 
 这里的“本体”不是简单的对象表或标签表。面向情报分析，它至少应包含 5 层内容：
 
-1. **对象层**：有哪些实体、事件、观测、影像、报告、任务。
+1. **对象层**：有哪些船舶、航空器、设施、组织、航线、事件、观测、影像、报告、任务。
 2. **关系层**：对象之间如何关联，例如位于、邻近、影响、依赖、支持、反驳、触发、生成。
 3. **规则层**：什么情况下构成异常、什么证据能提高或降低置信度、什么条件触发二级验证或三级报告。
 4. **动作层**：系统或分析师可以做什么，例如创建线索卡、请求影像、合并事件、降级传闻、生成报告、转持续监测。
@@ -115,7 +115,7 @@
 所以，本体要支撑的是“情报生产语义图谱”，而不是“数据库表名清单”。它至少要回答 8 个问题：
 
 1. 发生了什么事件？
-2. 涉及哪些实体和关注区？
+2. 涉及哪些船舶、航空器、设施、组织、航线和关注区？
 3. 哪些观测或证据支持这个事件？
 4. 哪些证据互相印证、互相矛盾或还无法判断？
 5. 置信度为什么上升或下降？
@@ -141,20 +141,27 @@
 
 - **缺数据不能硬推理**：没有历史基线，就不能严肃判断“异常”；没有遥感或权威来源，就不能把单源传闻升级成确认事件。
 - **证据冲突不能自动裁决为事实**：系统可以标出“支持/反驳/矛盾”，但高风险结论应保留分析师确认环节。
-- **规则只能表达已知模式**：不在规则库、训练样本或实体关系中的新型行为，只能先生成低置信线索，不能直接生成高置信结论。
+- **规则只能表达已知模式**：不在规则库、训练样本或对象关系中的新型行为，只能先生成低置信线索，不能直接生成高置信结论。
 - **合规边界必须编码进动作规则**：系统可以建议“继续监测、发布航行安全提示、通知民防”，不应自动生成进攻性处置建议。
 
 因此，正确定位是：本体让系统自动完成“候选发现、证据组织、置信度更新、影响传播、动作推荐”，但最终高风险情报判断仍要有人工审核和审计。
 
 ### 3.2 核心对象层
 
+这里不再设置统一的 `Entity` 对象。原因是“实体”过于宽泛，会把可移动目标、固定设施、组织主体、航线服务和地理对象混在一起，导致关系和规则只能写成泛泛的“关联/影响”，难以自动推理。核心对象应按业务语义和可观测性拆开；底层再用“身份解析记录”处理别名、编号和跨源 ID 映射。
+
 | 本体对象 | 作用 | 关键字段 | 适用场景 |
 | --- | --- | --- | --- |
 | 地理关注区（`GeoAOI`） | 统一表达海域、港口、设施、机场、航道、城市、锚地、事件区域 | `aoi_id`、`name`、`type`、`geometry`、`country`、`admin_area`、`importance`、`sensitivity_level`、`source`、`valid_from` | 全部 |
-| 实体（`Entity`） | 船舶、飞机、设施、港口、机场、公司、组织、地理地物的统一实体 | `entity_id`、`entity_type`、`names`、`identifiers`、`home_country`、`geometry_or_position`、`owner_operator`、`risk_tags` | 全部 |
-| 情报事件（`Event`） | 多源线索聚合后的标准事件 | `event_id`、`event_type`、`time_window`、`location`、`affected_entities`、`status`、`severity`、`confidence`、`summary` | 全部 |
+| 船舶（`Vessel`） | 商船、油轮、液化天然气船、服务船等可移动海上目标 | `vessel_id`、`mmsi`、`imo`、`name`、`callsign`、`ship_type`、`flag`、`owner_operator_id`、`current_voyage_id`、`risk_tags` | 场景 1/4 |
+| 航空器（`Aircraft`） | 民航、货机、公务机、无人机或其他公开可观测航空目标 | `aircraft_id`、`icao24`、`registration`、`callsign`、`aircraft_type`、`operator_id`、`route_id`、`position_quality`、`risk_tags` | 场景 2/3/4 |
+| 关键设施（`CriticalFacility`） | 港口、机场、炼厂、电站、海水淡化厂、液化天然气设施、数据中心等固定资产 | `facility_id`、`facility_type`、`name`、`operator_id`、`geometry`、`country`、`criticality`、`service_tags`、`status` | 场景 2/3 |
+| 组织与运营主体（`Organization`） | 港口运营方、航运公司、能源公司、机场管理方、政府部门、通告发布方 | `organization_id`、`name`、`organization_type`、`country`、`operates_assets`、`issues_sources`、`contact_policy` | 全部 |
+| 航线与服务（`RouteService`） | 海上航道、空中航路、港口服务、电力/供水/网络服务等被事件影响的业务对象 | `route_service_id`、`service_type`、`geometry_or_scope`、`normal_baseline`、`dependent_facilities`、`status` | 全部 |
+| 身份解析记录（`IdentityResolution`） | 处理同名、别名、编号、呼号和跨源 ID 映射；它是底层解析对象，不作为业务对象本体 | `identity_id`、`canonical_object_type`、`canonical_object_id`、`aliases`、`identifiers`、`source_refs`、`confidence` | 全部 |
+| 情报事件（`Event`） | 多源线索聚合后的标准事件 | `event_id`、`event_type`、`time_window`、`location`、`affected_objects`、`status`、`severity`、`confidence`、`summary` | 全部 |
 | 观测记录（`Observation`） | 来自单一源的一条观测事实，不直接等于结论 | `observation_id`、`source_id`、`source_type`、`observed_at`、`collected_at`、`location`、`raw_ref`、`claim`、`confidence`、`extraction_method` | 全部 |
-| 异常记录（`Anomaly`） | 从规则或模型中发现的异常 | `anomaly_id`、`anomaly_type`、`entity_id`、`aoi_id`、`start_time`、`end_time`、`score`、`baseline_ref`、`features` | 全部 |
+| 异常记录（`Anomaly`） | 从规则或模型中发现的异常 | `anomaly_id`、`anomaly_type`、`target_object_type`、`target_object_id`、`aoi_id`、`start_time`、`end_time`、`score`、`baseline_ref`、`features` | 全部 |
 | 影像资产（`ImageryAsset`） | 卫星影像或遥感产品资产 | `asset_id`、`provider`、`sensor`、`mode`、`capture_time`、`resolution`、`cloud_cover`、`geometry`、`storage_uri`、`license` | 全部 |
 | 检测对象（`DetectionObject`） | 影像或遥感中的检测结果 | `object_id`、`asset_id`、`object_type`、`geometry`、`confidence`、`model_version`、`attributes` | 场景 1/3/4 |
 | 证据关系（`EvidenceLink`） | 将观测、异常、影像检测与事件连接起来 | `event_id`、`evidence_id`、`relation`、`supports_or_refutes`、`weight`、`rationale` | 全部 |
@@ -170,7 +177,7 @@
 
 | 关系 | 英文关系名 | 主体 → 客体 | 推理价值 |
 | --- | --- | --- | --- |
-| 位于 | `located_in` | 实体/事件/观测 → 关注区 | 自动归属国家、海域、港口、机场、设施 |
+| 位于 | `located_in` | 船舶/航空器/设施/事件/观测 → 关注区 | 自动归属国家、海域、港口、机场、设施 |
 | 包含 | `contains` | 关注区 → 设施/航道/锚地/事件 | 从大范围事件下钻到受影响资产 |
 | 邻近 | `near` | 事件/观测 → 设施/航道/机场 | 判断潜在影响范围和需要核验的目标 |
 | 穿越 | `crosses` | 航线/航迹 → 关注区/风险区 | 识别受影响航线和船舶 |
@@ -267,9 +274,9 @@
     "aoi_id": "aoi_strait_of_hormuz_tss",
     "geometry": "polygon_ref"
   },
-  "affected_entities": [
-    {"entity_id": "route_hormuz_eastbound_tss", "role": "affected_route"},
-    {"entity_id": "port_fujairah", "role": "nearby_port"}
+  "affected_objects": [
+    {"object_type": "route_service", "object_id": "route_hormuz_eastbound_tss", "role": "affected_route"},
+    {"object_type": "facility", "object_id": "port_fujairah", "role": "nearby_port"}
   ],
   "evidence": [
     {"evidence_id": "obs_ukmto_001", "relation": "supports"},
@@ -309,7 +316,7 @@
 | 航道（`SeaLane`） | 主航道、交通分离制、推荐通行走廊 | `geometry`、`direction`、`normal_speed_range`、`normal_density_baseline` |
 | 锚地（`Anchorage`） | 锚地、等待区、避险区 | `geometry`、`capacity_baseline`、`normal_wait_time` |
 | 港口（`Port`） | 港口、码头、泊位 | `unlocode`、`berths`、`handled_cargo`、`operator`、`status` |
-| 船舶（`Vessel`） | 船舶实体 | `mmsi`、`imo`、`name`、`callsign`、`ship_type`、`flag`、`owner_operator` |
+| 船舶（`Vessel`） | 船舶对象 | `mmsi`、`imo`、`name`、`callsign`、`ship_type`、`flag`、`owner_operator` |
 | 航次（`Voyage`） | 一次航次或港口调用 | `vessel_id`、`origin`、`destination`、`eta`、`route_geometry`、`port_call_status` |
 | 海事通告（`MaritimeAdvisory`） | 英国海上贸易行动办公室、联合海事信息中心、航行警告区、港口通告 | `issuer`、`advisory_id`、`valid_time`、`aoi`、`hazard_type`、`recommended_action` |
 | 船舶识别观测（`AISObservation`） | 单个船舶自动识别点或消息 | `mmsi`、`timestamp`、`lat`、`lng`、`sog`、`cog`、`heading`、`nav_status`、`receiver` |
@@ -331,7 +338,7 @@
 
 当前项目可以支撑“地图上展示实时船舶 + 新闻/全球事件语言与语调数据库背景 + 哨兵-2快照 + 人工智能查询”的浅层演示，但还不能支撑一个真正的“商船安全一级预警→二级验证→三级报告事件包”。主要原因是缺：
 
-- 航运实体本体：航道、锚地、港口调用、海事通告。
+- 航运对象本体：航道、锚地、港口调用、海事通告。
 - 船舶自动识别历史库和异常规则：船舶识别静默、航线偏离、异常速度、异常锚泊、拥堵。
 - 雷达卫星船舶检测：当前雷达卫星目录是元数据，不是船位核验。
 - 一级线索卡、二级验证矩阵、三级通行风险报告。
@@ -358,8 +365,8 @@
 | 导航干扰格网（`GNSSGridCell`） | 全球导航卫星系统干扰格网 | `cell_id`、`geometry`、`score`、`severity`、`source`、`time_window` |
 | 航空位置质量观测（`ADSBQualityObservation`） | 广播式自动相关监视的位置质量观测 | `icao24`、`timestamp`、`lat`、`lng`、`nacp`、`nic`、`source` |
 | 船舶位置质量（`AISPositionQuality`） | 船舶自动识别位置质量与一致性 | `mmsi`、`timestamp`、`position_quality`、`receiver_count`、`jump_score` |
-| 欺骗/漂移聚类（`SpoofingCluster`） | 群体位置异常 | `cluster_id`、`entities`、`aoi`、`start_time`、`end_time`、`pattern` |
-| 真实位置证据（`TruePositionEvidence`） | 雷达/光学影像核验的真实位置证据 | `asset_id`、`detected_object_id`、`entity_match_confidence`、`position_delta_m` |
+| 欺骗/漂移聚类（`SpoofingCluster`） | 群体位置异常 | `cluster_id`、`objects`、`aoi`、`start_time`、`end_time`、`pattern` |
+| 真实位置证据（`TruePositionEvidence`） | 雷达/光学影像核验的真实位置证据 | `asset_id`、`detected_object_id`、`target_match_confidence`、`position_delta_m` |
 | 导航完整性事件（`NavigationIntegrityIncident`） | 导航完整性事件 | `event_id`、`affected_domain`、`affected_routes`、`severity`、`confidence` |
 
 ### 5.3 需要哪些数据构建
@@ -619,8 +626,8 @@
 
 | 阶段 | 目标 | 交付物 | 覆盖场景 |
 | --- | --- | --- | --- |
-| M0. 基础本体 | 定义统一对象、关系、规则、动作和状态机 | 地理关注区、实体、观测记录、情报事件、证据关系、验证矩阵、情报报告等模式 | 全部 |
-| M1. 阿联酋/海湾实体库 | 建立演示所需关注区和实体 | 港口、航道、锚地、机场、能源、电站、海水淡化、数据中心、行政区 | 全部 |
+| M0. 基础本体 | 定义统一对象、关系、规则、动作和状态机 | 地理关注区、船舶、航空器、关键设施、组织、航线与服务、身份解析、观测记录、情报事件、证据关系、验证矩阵、情报报告等模式 | 全部 |
+| M1. 阿联酋/海湾资产与关注区库 | 建立演示所需关注区、资产和运营主体 | 港口、航道、锚地、机场、能源、电站、海水淡化、数据中心、行政区、运营方 | 全部 |
 | M2. 权威事件源接入 | 补齐一级输入 | 英国海上贸易行动办公室、联合海事信息中心、航行警告区、武装冲突地点与事件数据项目连接器或半自动导入 | 1/2/4 |
 | M3. 历史遥测基线 | 让异常检测可信 | 船舶识别/航空监视 7 天事件窗口和 90 天基线，异常规则 | 1/4 |
 | M4. 遥感资产和验证 | 让二级验证可演示 | 哨兵-1/2、火点资产索引、T0/T1/Tn、影像证据卡、雷达/光学人工或半自动标注 | 1/2/3/4 |
