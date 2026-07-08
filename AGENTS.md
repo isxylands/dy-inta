@@ -23,7 +23,7 @@
 | 任务 | 先读 | 继续读 |
 | --- | --- | --- |
 | 了解本仓全局定位 | `README.md` | 本文件 |
-| 查 PRD 原文口径 | `PRD-v6.md` | 原始 PDF：`~/Downloads/DingDown/多源情报分析平台PRD_v6.0.pdf` |
+| 查 PRD 原文口径 | `PRD-v6.md` | 原始 PDF：`~/Documents/非Coding工作/DYINT/O多源情报系统/多源情报分析平台PRD_v6.0.pdf` |
 | 看当前项目与 PRD 差距 | `devdoc/PRD-v6-当前项目适配分析与UAE场景.md` | `/Users/liushen/Documents/cursorDevs/gintbroker` 当前代码 |
 | 看 4 个演示场景、本体和数据方案 | `devdoc/DYINT四场景本体数据与分析方案.md` | 钉钉文档 `DYINT-Demo` 最新内容 |
 | 看动态本体和数据中台融合路线 | `/Users/liushen/Documents/cursorDevs/gintbroker/docs/doops动态军事本体数据源挂接评估.md` | `doops-dev`、`moye-v4-product` 现场代码 |
@@ -38,7 +38,7 @@
 | `gintbroker` | `/Users/liushen/Documents/cursorDevs/gintbroker` | 现有多源态势地图和实时运行面，承载地图展示、低延迟推送、部分外部采集、地理/时序计算、AI 操作入口 | 默认只读；实现改造需用户明确要求 |
 | `doops-dev` | `/Users/liushen/Documents/cursorDevs/trsdatai/doops-dev` | 动态本体后端，负责对象、关系、属性、规则、动作、规则命中、证据治理和入图 | 默认只读；不要把它扩成全量采集器 |
 | `moye-v4-product` | `/Users/liushen/Documents/cursorDevs/moye-v4-product` | 数据中台后端，负责数据源连接、ODS/DWD、批处理、流处理、存储生命周期、数据服务和对外 Open API | 默认只读；适合承接规范数据源接入和加工 |
-| PRD PDF | `~/Downloads/DingDown/多源情报分析平台PRD_v6.0.pdf` | PRD 原始来源 | 需要核对原文时读取 |
+| PRD PDF | `~/Documents/非Coding工作/DYINT/O多源情报系统/多源情报分析平台PRD_v6.0.pdf` | PRD 原始来源 | 需要核对原文时读取 |
 | 钉钉文档 `DYINT-Demo` | 节点 `b9Y4gmKWrdgOmQNdC43lQN6dJGXn6lpz` | 演示事件包来源 | 需要最新内容时用钉钉文档工具读取 |
 
 三类后端的推荐关系：

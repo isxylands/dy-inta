@@ -1,6 +1,6 @@
 # PRD v6.0 当前项目适配分析与 UAE 场景建议
 
-> 需求来源：`/Users/liushen/Downloads/DingDown/多源情报分析平台PRD_v6.0.pdf`
+> 需求来源：`/Users/liushen/Documents/非Coding工作/DYINT/O多源情报系统/多源情报分析平台PRD_v6.0.pdf`
 >
 > PRD 整理稿：`/Users/liushen/Documents/githubDevs/dy-inta/PRD-v6.md`
 >

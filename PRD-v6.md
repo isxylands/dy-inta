@@ -4,7 +4,7 @@
 
 场景驱动：L1 → L2 → L3 情报链框架
 
-> 来源：`~/Downloads/DingDown/多源情报分析平台PRD_v6.0.pdf`
+> 来源：`~/Documents/非Coding工作/DYINT/O多源情报系统/多源情报分析平台PRD_v6.0.pdf`
 
 ## 1. 产品定位
 

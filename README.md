@@ -23,7 +23,7 @@
 
 | 对象 | 路径或标识 | 关系 |
 | --- | --- | --- |
-| 原始 PRD PDF | `~/Downloads/DingDown/多源情报分析平台PRD_v6.0.pdf` | `PRD-v6.md` 的来源 |
+| 原始 PRD PDF | `~/Documents/非Coding工作/DYINT/O多源情报系统/多源情报分析平台PRD_v6.0.pdf` | `PRD-v6.md` 的来源 |
 | 钉钉文档 | `DYINT-Demo`，节点 `b9Y4gmKWrdgOmQNdC43lQN6dJGXn6lpz` | 4 个演示事件包的来源 |
 | 被评估实现项目 | `/Users/liushen/Documents/cursorDevs/gintbroker` | 当前可复用底座和差距分析对象 |
 | 本仓库 | `/Users/liushen/Documents/githubDevs/dy-inta` | 需求、方案、评估和交接文档源 |
