@@ -1,0 +1,4 @@
+interface:
+  display_name: "售前演示方案评审"
+  short_description: "评审售前Demo场景的业务故事、本体模型和数据闭环链路"
+  default_prompt: "Use $presales-demo-review to review this presales demo scenario requirements analysis plan."
