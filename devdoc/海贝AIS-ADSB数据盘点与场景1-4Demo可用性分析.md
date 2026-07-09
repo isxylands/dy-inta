@@ -21,7 +21,7 @@
 3. **2-4 月更适合做基线，6 月 1-15 日仍适合做事件窗口候选**：2 月 ADS-B 密度最高；3 月、4 月新增数据能补足连续基线和演示对照；6 月与当前 PRD/样例叙事更容易接上，但需要补新闻、海事通告、GNSS/RF、影像或权威事件源，否则只能做“风险降级研判 demo”，不能做高置信事件断言。
 4. **本机新增地理知识库能显著补 AOI 短板**：`12NM`、`24NM`、`eez_boundaries`、`coastline`、`国家边界线` 等 CSV 可把 bbox 初筛升级为海域、领海、毗连区、EEZ、海岸线和边界线语义层；正式 demo 仍需从这些通用地理层裁剪出霍尔木兹、阿曼湾、UAE 港口进近、锚地和航道 polygon。
 5. **本机新增设施目标素材直接缓解场景 3 的“没有真实设施目录”问题**：`4-设施目标` 已有港口、机场、军事基地、油气设施、电力系统、水利系统和交通枢纽表，以及 600+ 张设施图片；它能支撑设施目录、设施卡片和组件标注起步，但仍缺真实多时相损伤影像、火点基线、运营状态和恢复证据。
-6. **本机新增武器装备素材能补场景 2 的身份和背景解释，但不应变成进攻性叙事**：`3-武器装备` 中的舰船、航空器、卫星和装备库可用于 MMSI/ICAO enrichment、舰船/航空器类别说明、卫星能力说明和背景态势标签；对外表达必须固定为航运安全、设施保护、证据验证和风险降级。
+6. **本机新增武器装备素材能补场景 2 的身份和背景解释，但不应变成进攻性叙事**：`3-武器装备` 中的舰船、航空器、卫星和装备库可用于候选 MMSI/ICAO enrichment、舰船/航空器类别说明、卫星能力说明和背景态势标签；4 个 `.xls` 已能字段级读取，但没有遥测直连键，仍需 registry 或人工映射；对外表达必须固定为航运安全、设施保护、证据验证和风险降级。
 7. **必须先做一次去重和派生汇总，避免后续反复全表扫描**：外部盘原始 CSV 约 16GB、1.73 亿数据行级别。后续不应每次直接扫原始文件，应生成可复用的 Parquet/DuckDB/PostGIS 摘要层。
 
 对“场景 1 和场景 4 是否可合并”的数据侧判断：**可以合并，而且应该合并**。场景 1 提供业务问题和用户叙事，场景 4 提供多源证据、导航完整性和风险降级能力。数据侧应合并成一个“海上通道安全与导航完整性风险研判”场景，避免把同一批 AIS/ADS-B、新闻、规则、影像证据拆成两个重复 demo。
@@ -53,7 +53,7 @@
 - `._*` macOS resource fork 文件
 - `~$*` Office 临时锁文件
 
-本轮只读检查原始 CSV、Excel 工作簿结构和图片资产数量，不复制原始数据进入本仓。`.xlsx` 已读取 sheet 名、行列规模和首行字段；4 个 `.xls` 由于本机缺 `xlrd` 且 `soffice` 运行时缺 `libfontconfig.1.dylib`，本轮只记录文件存在和主题，不做字段级结论。
+本轮只读检查原始 CSV、Excel 工作簿结构和图片资产数量，不复制原始数据进入本仓。`.xlsx` 已读取 sheet 名、行列规模和首行字段；此前受依赖限制的 4 个 `.xls` 本轮已用 `xlrd` 补扫，记录字段画像、行列规模、关键列完整度和可用边界，不复制原始记录、图片 base64 或长文本描述。
 
 ### 2.2 文件规模
 
@@ -62,7 +62,7 @@
 | AIS | 5 个 CSV | 6,427,998 | 约 1.8GB | 2/3/4/5 月文件 + 6 月 1-15 日文件；文件名按月，但 `IR_LASTTIME` 仍有跨月和异常值，不能直接按文件名聚合 |
 | ADS-B | 135 个 CSV | 166,242,774 | 约 14GB | 2 月 28 天、3 月 31 天、4 月 30 天、5 月 31 天、6 月 1-15 日逐日 CSV |
 | 地理知识库 | 6 个 CSV | 14,923 | 约 428MB | 领海、毗连区、EEZ、海岸线、高海和国家边界线；多数行携带 `geometry` 或 `geometry_json` |
-| 武器装备 | 34 个表格、607 张图片 | 表格行数不统一 | 约 468MB | 舰船、航空器、卫星、雷达、装备、组织、地点等知识库；4 个 `.xls` 本轮未字段级解析 |
+| 武器装备 | 34 个表格、607 张图片 | 表格行数不统一 | 约 468MB | 舰船、航空器、卫星、雷达、装备、组织、地点等知识库；4 个 `.xls` 已补字段级画像，可做候选 identity seed 和 code mapping |
 | 设施目标 | 7 个表格、662 张图片 | 表格行数不统一 | 约 389MB | 港口、机场、军事基地、油气设施、电力系统、水利系统、交通枢纽；适合先做设施目录和图片卡 |
 | 合计 | 140 个海贝遥测 CSV + 本机样例资产 | 172,670,772 遥测数据行 | 约 16GB+ | 遥测行数不含表头；原始数据不进入 Git |
 
@@ -163,6 +163,48 @@ AIS/
 - 按文件名做 2-6 月统计仍会产生跨月混入。
 - 5 月、6 月窗口可能被多个 AIS 文件重复覆盖。
 - 后续必须按 `IR_LASTTIME` 重新分区，并做去重。
+
+### 3.3 `3-武器装备` 中 4 个 `.xls` 补扫
+
+此前受本机 `xlrd` 和 `soffice` 依赖限制，只记录了 4 个 `.xls` 文件存在。本轮补扫确认它们都是老式 OLE Excel 工作簿，可正常读取。结论是：这些表适合做舰船、航空器、装备和设施的候选身份种子、类别说明和源系统 code mapping；不包含 AIS/ADS-B 可直接 join 的 `MMSI`、`IMO`、`ICAO`、呼号、注册号或坐标字段，不能替代外部 registry enrichment。
+
+| 文件 | sheet | 数据行 | 列数 | 字段级价值 | 主要限制 |
+| --- | --- | ---: | ---: | --- | --- |
+| `system.hsfw_aircraft_51791.xls` | `sheet1` | 5,179 | 40 | 已解码航空器/飞行器库，核心字段包括 `GUID`、`ID`、`Name`、`Type`、`Category`、`ParentDirId`、`OperatorCountry`、`OperatorService`、服役/退役年份、尺寸和载荷类字段、`Description`、`Model3D`、`image_base64`、`vector` | 无 `ICAO`、注册号、呼号、经纬度；只能做名称/类别/国家层面的候选映射 |
+| `system.hsfw_facility_33491.xls` | `sheet1` | 3,349 | 33 | 已解码设施/装备/分队库，核心字段包括 `GUID`、`ID`、`Name`、`Type`、`Category`、`ParentDirId`、`OperatorCountry`、`OperatorService`、`MobileCategory`、`Area`、`Radius`、`Description`、`Model3D`、`image_base64`、`vector` | 偏仿真和装备分类口径，不是 `4-设施目标` 那类民用基础设施目录；无坐标和损伤/恢复证据 |
+| `system.hsfw_ship_34041.xls` | `sheet1` | 3,404 | 48 | 已解码舰船库，核心字段包括 `GUID`、`ID`、`Name`、`Type`、`Category`、`ParentDirId`、`OperatorCountry`、`OperatorService`、服役/退役年份、吃水/船宽/排水量/船员/货载/海况等画像字段、`Description`、`Model3D`、`image_base64`、`vector` | 无 `MMSI`、`IMO`、呼号和实时位置；不能直接补齐 AIS 身份，只能作为人工候选库 |
+| `舰船/dataship.xls` | `dataship`、空 `Sheet1` | 3,404 | 48 | 同一舰船库的源系统编码口径，字段包括 `ID`、`GUID`、`Category`、`Type`、`Name`、`OperatorCountry`、`OperatorService`、尺寸/排水量/货载/成本/模型/描述等；适合做 code mapping 和兼容性核对 | `Category`、`Type`、`OperatorCountry` 等多为数字 code，不适合直接给业务或客户展示；与已解码 `system.hsfw_ship_34041.xls` 应按 `GUID` 对齐使用 |
+
+关键字段完整度：
+
+| 数据集 | 完整度较高字段 | 描述/模型字段 | 空字段或低价值字段 |
+| --- | --- | --- | --- |
+| 航空器 | `GUID`、`ID`、`Name`、`Type`、`Category`、`ParentDirId`、`OperatorCountry`、`OperatorService`、`image_base64`、`vector` 基本完整 | `Description` 约 805/5,179，`Model3D` 约 1,071/5,179 | `DBID`、`height`、`length` 为空；无 ADS-B 直接匹配键 |
+| 设施/装备 | `GUID`、`ID`、`Name`、`Type`、`Category`、`ParentDirId`、`OperatorCountry`、`OperatorService`、`image_base64`、`vector` 基本完整 | `Description` 约 203/3,349，`Model3D` 约 179/3,349 | `DBID`、`length` 为空；无坐标和事件状态 |
+| 舰船解码表 | `GUID`、`ID`、`Name`、`Type`、`Category`、`ParentDirId`、`OperatorCountry`、`OperatorService`、尺寸和排水量类字段、`image_base64`、`vector` 基本完整 | `Description` 约 584/3,404，`Model3D` 约 267/3,404 | `DBID`、`height`、`length` 为空；无 AIS 直接匹配键 |
+| 舰船编码表 | 源系统 code、尺寸、排水量、货载、`Description`、`Model3D` 可读 | `Description` 与解码表规模一致，`Deprecated` 仅 98/3,404 有值 | 业务类别、国家、军种等需 code mapping 后才能解释 |
+
+类别分布提示：
+
+| 数据集 | 主要类别分布 | demo 使用建议 |
+| --- | --- | --- |
+| 航空器 | 固定翼 3,609、直升机 1,049、固定翼/舰载机 441 | 可为 ADS-B 目标做候选机型/类别解释，但必须经 `ICAO` registry 或人工映射确认 |
+| 设施/装备 | 移动车辆 1,997、地表建筑 574、移动人员 311，`Type` 中雷达分队、陆军分队、地防导弹分队较多 | 可解释背景对象和规则词表，不直接作为客户版设施损伤目录 |
+| 舰船 | 水面战斗舰艇 2,424、辅助舰艇 291、航空母舰 280、两栖舰艇 269、贸易船 79 | 可为 AIS 高频目标做候选类别和名称库，但必须补 `MMSI/IMO` registry 后才能绑定具体船舶 |
+
+建议抽取的标准 identity seed 字段：
+
+| 字段 | 说明 |
+| --- | --- |
+| `source_file` | 原始 `.xls` 文件名 |
+| `source_guid`、`source_id` | `GUID` 和 `ID` |
+| `domain` | `aircraft`、`ship`、`facility_or_equipment` |
+| `name`、`type`、`category`、`parent_dir` | 名称和分类口径 |
+| `operator_country`、`operator_service` | 国家/军种/运营方口径；对外展示前需脱敏和审查 |
+| `year_commissioned`、`year_decommissioned` | 生命周期字段；缺省 `0` 不能直接解释为真实年份 |
+| `profile_json` | 尺寸、排水量、载荷、船员等领域字段，按对象类型保留 |
+| `has_description`、`has_model3d`、`has_image`、`has_vector` | 只记录可用性，不把 base64 和长文本塞进 Git |
+| `evidence_level` | 固定为 `candidate_only`，避免把候选库写成事实 registry |
 
 ## 4. AIS 数据字段与质量
 
@@ -650,7 +692,7 @@ PostGIS 展示层：
 | AIS 行为分析表 | 中 | 可作为规则种子，但要改写成航行安全/数据质量/风险降级口径 |
 | 卫星行为分析表 | 中 | 可复用方法论，但需要补海上通道相关 SAR/光学影像 |
 | 地理知识库 | 高 | 6 个 CSV、约 14,923 数据行，可承载领海、毗连区、EEZ、海岸线、高海和边界线；正式 demo 需裁剪成 AOI polygon |
-| 3-武器装备 | 中 | 34 个表格、607 张图片，可做舰船、航空器、卫星和装备 identity enrichment、类别解释和背景标签；对外必须去进攻性表达 |
+| 3-武器装备 | 中 | 34 个表格、607 张图片；其中 4 个 `.xls` 已补字段级画像，可做舰船、航空器、设施/装备候选 identity seed、类别解释、图片可用性标记和源系统 code mapping；对外必须去进攻性表达 |
 | 4-设施目标 | 高 | 7 个表格、662 张图片，可做港口、机场、军事基地、油气、电力、水利和交通设施目录；场景 3 可先冻结港口/能源设施包 |
 | 多源融合/知识库样例 | 中 | 可复用证据链和置信度思想，但需要去军事打击化表达 |
 
@@ -659,7 +701,7 @@ PostGIS 展示层：
 - 地理知识库是通用地理层，不等于已经完成霍尔木兹 TSS、锚地、港口进近区和能源设施缓冲区。
 - `4-设施目标/基础设施/油气设施.xlsx`、`电力系统.xlsx` 等包含超大候选清单，但人工整理的 `数据表` 当前较小；它适合做目录种子，不等于完成 UAE/海湾重点设施包。
 - 设施图片多数是单张展示图，不是 T0/T1/T2/Tn 多时相遥感证据；不能直接支撑损伤或恢复判断。
-- `3-武器装备` 可帮助身份 enrichment，但客户演示只应输出“类别/背景/需核验”，不要输出攻击能力推断或行动建议。
+- `3-武器装备` 可帮助身份 enrichment，但 4 个 `.xls` 不含 `MMSI`、`IMO`、`ICAO`、呼号、注册号或坐标；客户演示只应输出“类别/背景/需核验”，不要输出攻击能力推断或行动建议。
 
 组合后的 demo 数据包建议：
 
@@ -746,14 +788,14 @@ PostGIS 展示层：
 
 | 场景 | 新增帮助 | 可以立刻做的演示增强 | 仍不能直接证明 |
 | --- | --- | --- | --- |
-| 场景 2：商船风险上升与防卫准备 | 3/4 月 AIS/ADS-B 补连续基线；地理知识库补海域和边界语义；装备库补舰船/航空器/卫星身份说明 | 增加“2-4 月常态基线 -> 5/6 月风险窗口”的时间轴；用地理层替换粗 bbox；给高频 MMSI/ICAO 增加人工身份候选和“需核验”标签 | 不能证明某船故意关闭 AIS、某航空器军事属性、某次袭击已经被遥测单独证明 |
+| 场景 2：商船风险上升与防卫准备 | 3/4 月 AIS/ADS-B 补连续基线；地理知识库补海域和边界语义；装备库补舰船/航空器/卫星身份说明，4 个 `.xls` 可提供已解码候选库和源系统 code mapping | 增加“2-4 月常态基线 -> 5/6 月风险窗口”的时间轴；用地理层替换粗 bbox；给高频 MMSI/ICAO 增加人工身份候选和“需核验”标签 | 不能证明某船故意关闭 AIS、某航空器军事属性、某次袭击已经被遥测单独证明；`.xls` 候选库不能直接绑定 AIS/ADS-B 实时目标 |
 | 场景 3：能源关键设施损伤与恢复监测 | `4-设施目标` 提供港口、油气、电力、水利、交通枢纽和图片资产 | 先冻结 1 个港口或能源设施包，形成设施卡、组件候选、图片清单和持续监测任务模板 | 不能证明真实损伤、火灾、停运或恢复；仍缺 T0/T1/T2/Tn 影像、FIRMS、运营状态和官方通告 |
 
 建议的场景 2/3 数据包冻结顺序：
 
 1. 先从地理知识库裁剪 `hormuz_oman`、UAE 港口进近区、富查伊拉锚地、主要航道和港口 AOI。
 2. 再从 AIS/ADS-B 派生层冻结 2 月基线、4 月过渡窗口、5 月下旬和 6 月上旬两个候选事件窗口。
-3. 同步从 `3-武器装备` 抽取舰船、航空器和卫星 identity seed，只做类别解释和待核验标签。
+3. 同步从 `3-武器装备` 抽取舰船、航空器和卫星 identity seed；4 个 `.xls` 先按 `GUID/ID/Name/Type/Category/OperatorCountry/OperatorService` 建候选库，只做类别解释和待核验标签。
 4. 从 `4-设施目标` 选择 1 个港口或油气设施，建立设施目录、图片 manifest 和组件标注任务。
 5. 最后补新闻、海事通告、FIRMS、影像和运营状态，否则 2/3 只能做方法演示，不能做客户级事实演示。
 
@@ -786,7 +828,7 @@ PostGIS 展示层：
 2. 在外部盘生成 `_derived` 派生层，至少包含 `files`、`ais_points`、`adsb_points`、`daily_region_counts`。
 3. 用新增地理知识库裁剪正式 AOI：霍尔木兹、阿曼湾、UAE 港口进近区、富查伊拉锚地、主要航道、EEZ/领海参考层。
 4. 按 2 月基线、4 月 19-24 日、5 月 20-31 日、6 月 2-11 日生成小型 demo 窗口摘要。
-5. 从 `3-武器装备` 抽取高频 MMSI/ICAO 的人工身份候选，字段至少包含 `source_file`、`candidate_name`、`category`、`confidence`、`display_allowed`。
+5. 从 `3-武器装备` 抽取高频 MMSI/ICAO 的人工身份候选；`.xls` 侧先落 `source_file`、`source_guid`、`source_id`、`domain`、`name`、`type`、`category`、`operator_country`、`operator_service`、`evidence_level=candidate_only`，再由外部 registry 或人工表补 `MMSI/IMO/ICAO` 映射。
 6. 从 `4-设施目标` 冻结 1 个港口或能源设施包，生成 `facility_catalog_seed.csv`、`facility_images_manifest.csv` 和组件标注任务。
 7. 补 5/6 月窗口新闻、海事通告、GNSS/RF、影像证据；补场景 3 的 FIRMS、运营状态和恢复证据。
 
@@ -818,6 +860,8 @@ PostGIS 展示层：
 | ADS-B 身份字段为空 | 影响 demo 可读性 | 接入 ICAO registry 或第三方 aviation database |
 | AIS `IR_NAME` 为空 | 需要外部船名补全 | MMSI/IMO registry enrichment |
 | bbox 区域准确性 | 仅适合初筛 | 使用正式 AOI polygon 重算 |
+| 4 个 `.xls` 无遥测直连键 | 已能字段级读取，但没有 `MMSI`、`IMO`、`ICAO`、呼号、注册号或坐标 | 作为候选 identity seed 使用，另建人工映射或接 registry |
+| `.xls` 中图片和向量字段 | `image_base64`、`vector` 完整度高，但不适合直接提交进 Git | 只生成 manifest、hash 和展示许可字段；原始图片留在外部数据目录 |
 
 ## 14. 给后续 agent 的接手提示
 
@@ -828,5 +872,5 @@ PostGIS 展示层：
 3. 先生成 `_derived` 派生层，再做多轮探索。
 4. 所有面向客户的表述都使用“航运安全、民用基础设施保护、多源验证、风险降级”口径。
 5. 外部盘当前路径是 `/Volumes/exFAT466/海贝数据_2月1到6月15_AIS和ADS-B`；不要再使用旧路径名。
-6. 场景 2/3 新增素材优先看 `地理知识库`、`3-武器装备`、`4-设施目标`，但要把静态目录、图片和真实事件证据分开。
+6. 场景 2/3 新增素材优先看 `地理知识库`、`3-武器装备`、`4-设施目标`，但要把静态目录、图片和真实事件证据分开；`3-武器装备` 的 4 个 `.xls` 已补字段级画像，结论见第 3.3 节。
 7. 修改 `gintbroker`、`doops-dev`、`moye-v4-product` 前必须得到用户明确授权。
