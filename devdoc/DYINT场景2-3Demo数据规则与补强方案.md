@@ -8,6 +8,8 @@
 - `devdoc/PRD-v6-当前项目适配分析与UAE场景.md`
 - `devdoc/海贝AIS-ADSB数据盘点与场景1-4Demo可用性分析.md`
 - `devdoc/DYINT场景2-3Demo客户版演示脚本.md`
+- `devdoc/DYINT场景2-6月10至12日霍尔木兹风险窗口目标包.md`
+- `devdoc/DYINT场景2-5月商船攻击候选目标分析与数据补强方案.md`
 - `/Users/liushen/Documents/cursorDevs/gintbroker/docs/doops动态军事本体数据源挂接评估.md`
 
 样例数据目录：
