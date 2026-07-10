@@ -15,8 +15,9 @@
 | 文件 | 作用 | 先读顺序 |
 | --- | --- | --- |
 | [`PRD-v6.md`](PRD-v6.md) | 从原始 PDF 整理出的 PRD v6.0 Markdown 版本，定义平台目标、L1/L2/L3 情报链、模块拆分和验收基线 | 1 |
-| [`devdoc/PRD-v6-当前项目适配分析与UAE场景.md`](devdoc/PRD-v6-当前项目适配分析与UAE场景.md) | 分析 `gintbroker` 当前能力与 PRD 的差距，并提出阿联酋场景建议 | 2 |
-| [`devdoc/DYINT四场景本体数据与分析方案.md`](devdoc/DYINT四场景本体数据与分析方案.md) | 基于钉钉文档 `DYINT-Demo` 进一步拆解 4 个演示场景、本体、数据、推理能力和建设路线 | 3 |
+| [`devdoc/预警佐证来源与PRD两类场景融合方案分析-20260710.md`](devdoc/预警佐证来源与PRD两类场景融合方案分析-20260710.md) | 当前紧急汇报策略：以公开事实、冻结样例、模拟影像适配器和 `gintbroker` 最小增强证明 PRD 两类场景可行 | 2 |
+| [`devdoc/PRD-v6-当前项目适配分析与UAE场景.md`](devdoc/PRD-v6-当前项目适配分析与UAE场景.md) | 分析 `gintbroker` 当前能力与 PRD 的差距，并提出阿联酋场景建议 | 3 |
+| [`devdoc/DYINT四场景本体数据与分析方案.md`](devdoc/DYINT四场景本体数据与分析方案.md) | 基于钉钉文档 `DYINT-Demo` 进一步拆解 4 个演示场景、本体、数据、推理能力和建设路线 | 4 |
 | [`AGENTS.md`](AGENTS.md) | 给后续 Codex/Agent 的项目内工作规则，说明关联项目、边界、术语、证据和 Git 操作要求 | 0 |
 
 ## 关联材料与路径
@@ -45,7 +46,7 @@
 
 ## 后续工作建议
 
-1. 先以 `devdoc/DYINT四场景本体数据与分析方案.md` 为当前设计基线。
+1. 近期领导汇报和快速 Demo 先以 `devdoc/预警佐证来源与PRD两类场景融合方案分析-20260710.md` 为取舍基线；长期本体、数据和四场景研究继续参考 `devdoc/DYINT四场景本体数据与分析方案.md`。
 2. 如果要讨论产品方案、演示脚本、验收口径，优先改 `dy-inta` 文档。
 3. 如果要判断“当前系统能不能做到”，必须只读检查 `/Users/liushen/Documents/cursorDevs/gintbroker` 的最新代码和 README，不要沿用旧结论。
 4. 如果要落地实现，先把需求拆成可验收的工作项，再决定是在 `gintbroker` 改造，还是新建服务/模块。

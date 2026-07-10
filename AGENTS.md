@@ -24,6 +24,7 @@
 | --- | --- | --- |
 | 了解本仓全局定位 | `README.md` | 本文件 |
 | 查 PRD 原文口径 | `PRD-v6.md` | 原始 PDF：`~/Documents/非Coding工作/DYINT/O多源情报系统/多源情报分析平台PRD_v6.0.pdf` |
+| 看近期课题组领导汇报与最短 Demo 路线 | `devdoc/预警佐证来源与PRD两类场景融合方案分析-20260710.md` | `devdoc/DYINT场景2双专题交互Mock.html`、`gintbroker` 当前代码与目标环境 |
 | 看当前项目与 PRD 差距 | `devdoc/PRD-v6-当前项目适配分析与UAE场景.md` | `/Users/liushen/Documents/cursorDevs/gintbroker` 当前代码 |
 | 看 4 个演示场景、本体和数据方案 | `devdoc/DYINT四场景本体数据与分析方案.md` | 钉钉文档 `DYINT-Demo` 最新内容 |
 | 看动态本体和数据中台融合路线 | `/Users/liushen/Documents/cursorDevs/gintbroker/docs/doops动态军事本体数据源挂接评估.md` | `doops-dev`、`moye-v4-product` 现场代码 |
