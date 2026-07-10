@@ -1,0 +1,2055 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DYINT 场景 2 双专题交互 Mock</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='6' width='20' height='20' rx='2' transform='rotate(45 16 16)' fill='%23051a2a' stroke='%2348dbf5'/%3E%3Ctext x='16' y='19' text-anchor='middle' font-family='monospace' font-size='8' fill='%2348dbf5'%3EDY%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #020b13;
+      --panel: rgba(3, 19, 31, 0.94);
+      --panel-strong: #051a2a;
+      --panel-soft: rgba(5, 30, 47, 0.76);
+      --line: rgba(77, 195, 227, 0.26);
+      --line-strong: rgba(92, 220, 245, 0.54);
+      --cyan: #48dbf5;
+      --cyan-soft: #8deafa;
+      --blue: #4d8cff;
+      --amber: #f7bd4a;
+      --orange: #f27945;
+      --red: #f05d66;
+      --green: #6ee7b7;
+      --purple: #b58cff;
+      --text: #e8f6fb;
+      --muted: #86a8b7;
+      --dim: #527181;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.42);
+      --mono: "SFMono-Regular", "Roboto Mono", "Cascadia Code", Consolas, monospace;
+      --ui: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--ui);
+    }
+
+    button, input { font: inherit; }
+
+    button {
+      color: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 292px minmax(0, 1fr) 376px;
+      grid-template-rows: 66px minmax(0, 1fr) 30px;
+      width: 100vw;
+      height: 100svh;
+      min-width: 1080px;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(20, 119, 148, 0.12), transparent 34%),
+        var(--bg);
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 292px minmax(0, 1fr) auto;
+      align-items: center;
+      min-width: 0;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(5, 28, 45, 0.98), rgba(2, 13, 22, 0.96));
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+      z-index: 40;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 100%;
+      padding: 0 18px;
+      border-right: 1px solid var(--line);
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line-strong);
+      color: var(--cyan);
+      background: rgba(72, 219, 245, 0.06);
+      transform: rotate(45deg);
+      box-shadow: inset 0 0 18px rgba(72, 219, 245, 0.08);
+    }
+
+    .brand-mark span {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 800;
+      transform: rotate(-45deg);
+    }
+
+    .brand-copy strong {
+      display: block;
+      letter-spacing: 0.14em;
+      font-size: 14px;
+    }
+
+    .brand-copy small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .top-context {
+      min-width: 0;
+      padding: 0 20px;
+    }
+
+    .context-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .context-title {
+      overflow: hidden;
+      font-weight: 720;
+      font-size: 15px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .context-tag,
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 22px;
+      padding: 2px 8px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--cyan-soft);
+      background: rgba(72, 219, 245, 0.06);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .status-tag::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 10px currentColor;
+      content: "";
+    }
+
+    .context-subtitle {
+      overflow: hidden;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 14px;
+    }
+
+    .segmented {
+      display: flex;
+      padding: 3px;
+      border: 1px solid var(--line);
+      background: rgba(2, 13, 22, 0.7);
+    }
+
+    .segmented button,
+    .ghost-button,
+    .icon-button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .segmented button {
+      min-height: 28px;
+      padding: 0 10px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 11px;
+    }
+
+    .segmented button.is-active {
+      color: #03131d;
+      background: var(--cyan);
+      font-weight: 750;
+    }
+
+    .ghost-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      color: var(--cyan-soft);
+      background: rgba(6, 31, 47, 0.78);
+      font-size: 11px;
+    }
+
+    .ghost-button:hover {
+      border-color: var(--line-strong);
+      background: rgba(10, 50, 70, 0.85);
+    }
+
+    .ghost-button svg,
+    .icon-button svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.7;
+    }
+
+    .left-panel,
+    .right-panel {
+      min-height: 0;
+      background: var(--panel);
+      z-index: 25;
+    }
+
+    .left-panel {
+      grid-column: 1;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--line);
+      box-shadow: 12px 0 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .panel-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 46px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-tabs button {
+      position: relative;
+      border: 0;
+      color: var(--dim);
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .panel-tabs button.is-active {
+      color: var(--cyan);
+    }
+
+    .panel-tabs button.is-active::after {
+      position: absolute;
+      right: 20%;
+      bottom: 0;
+      left: 20%;
+      height: 2px;
+      background: var(--cyan);
+      box-shadow: 0 0 10px rgba(72, 219, 245, 0.7);
+      content: "";
+    }
+
+    .topic-scroll {
+      min-height: 0;
+      overflow: auto;
+      padding: 14px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-heading code {
+      color: var(--cyan-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .topic-card {
+      position: relative;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 14px 13px 13px 16px;
+      overflow: hidden;
+      border: 1px solid rgba(78, 148, 172, 0.26);
+      border-radius: 3px;
+      color: inherit;
+      text-align: left;
+      background: rgba(3, 20, 32, 0.7);
+      cursor: pointer;
+      transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+    }
+
+    .topic-card:hover {
+      border-color: rgba(72, 219, 245, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .topic-card.is-active {
+      border-color: var(--cyan);
+      background: linear-gradient(90deg, rgba(16, 97, 119, 0.23), rgba(4, 26, 40, 0.76));
+      box-shadow: inset 3px 0 0 var(--cyan), 0 0 22px rgba(72, 219, 245, 0.07);
+    }
+
+    .topic-card.is-active::after {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 20px;
+      height: 20px;
+      border-top: 1px solid var(--cyan);
+      border-right: 1px solid var(--cyan);
+      content: "";
+    }
+
+    .topic-kind {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .topic-index {
+      color: var(--cyan);
+    }
+
+    .topic-name {
+      margin: 8px 0 5px;
+      font-size: 14px;
+      font-weight: 730;
+      line-height: 1.35;
+    }
+
+    .topic-window {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .topic-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 11px;
+      padding-top: 9px;
+      border-top: 1px solid rgba(78, 148, 172, 0.16);
+    }
+
+    .topic-meta span {
+      color: var(--dim);
+      font-size: 10px;
+    }
+
+    .topic-meta strong {
+      color: var(--cyan-soft);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .shared-box {
+      margin-top: 18px;
+      padding-top: 15px;
+      border-top: 1px solid var(--line);
+    }
+
+    .layer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 35px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .layer-name {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .layer-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .layer-dot.amber { background: var(--amber); }
+    .layer-dot.green { background: var(--green); }
+    .layer-dot.purple { background: var(--purple); }
+
+    .switch {
+      position: relative;
+      display: inline-flex;
+      width: 31px;
+      height: 17px;
+    }
+
+    .switch input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .switch span {
+      width: 100%;
+      border: 1px solid rgba(100, 151, 169, 0.45);
+      border-radius: 999px;
+      background: rgba(20, 43, 53, 0.8);
+      cursor: pointer;
+      transition: 150ms ease;
+    }
+
+    .switch span::after {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #6e8b97;
+      content: "";
+      transition: 150ms ease;
+    }
+
+    .switch input:checked + span {
+      border-color: rgba(72, 219, 245, 0.72);
+      background: rgba(22, 112, 133, 0.35);
+    }
+
+    .switch input:checked + span::after {
+      left: 17px;
+      background: var(--cyan);
+      box-shadow: 0 0 8px rgba(72, 219, 245, 0.9);
+    }
+
+    .foundation-note {
+      margin-top: 16px;
+      padding: 11px;
+      border-left: 2px solid var(--cyan);
+      color: var(--muted);
+      background: rgba(72, 219, 245, 0.045);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .foundation-note strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--cyan-soft);
+      font-size: 11px;
+    }
+
+    .workspace {
+      position: relative;
+      grid-column: 2;
+      grid-row: 2;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      background: #07151e;
+    }
+
+    .map-stage {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 62% 52%, rgba(21, 85, 98, 0.24), transparent 30%),
+        linear-gradient(160deg, #08202b 0%, #06131d 65%, #020a11 100%);
+    }
+
+    .map-stage::after {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(72, 219, 245, 0.025) 1px, transparent 1px),
+        linear-gradient(rgba(72, 219, 245, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      content: "";
+      mask-image: radial-gradient(circle at 50% 50%, black 20%, transparent 90%);
+    }
+
+    #situationMap {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .map-land {
+      fill: #21302d;
+      stroke: rgba(166, 202, 191, 0.36);
+      stroke-width: 1.2;
+    }
+
+    .map-land-alt { fill: #1c2928; }
+
+    .coastline {
+      fill: none;
+      stroke: rgba(201, 226, 215, 0.45);
+      stroke-width: 1.5;
+    }
+
+    .map-label {
+      fill: rgba(203, 225, 224, 0.68);
+      font-family: var(--ui);
+      font-size: 13px;
+      paint-order: stroke;
+      stroke: rgba(3, 13, 19, 0.9);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+
+    .map-label.small {
+      fill: rgba(168, 205, 209, 0.58);
+      font-size: 10px;
+    }
+
+    .map-label.water {
+      fill: rgba(68, 193, 220, 0.42);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-style: italic;
+      letter-spacing: 0.08em;
+    }
+
+    .map-toolbar {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      left: 14px;
+      z-index: 8;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .map-title-box,
+    .map-search {
+      border: 1px solid var(--line);
+      background: rgba(2, 14, 23, 0.84);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      pointer-events: auto;
+    }
+
+    .map-title-box {
+      max-width: 520px;
+      padding: 10px 13px;
+    }
+
+    .map-kicker {
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+    }
+
+    .map-title {
+      margin-top: 4px;
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .map-precision {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .map-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: min(280px, 32vw);
+      min-height: 38px;
+      padding: 0 12px;
+      color: var(--dim);
+      font-size: 10px;
+    }
+
+    .map-search svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: var(--cyan);
+      stroke-width: 1.8;
+    }
+
+    .gate-banner {
+      position: absolute;
+      top: 82px;
+      left: 50%;
+      z-index: 9;
+      display: none;
+      width: min(620px, calc(100% - 36px));
+      padding: 9px 12px;
+      border: 1px solid rgba(247, 189, 74, 0.5);
+      color: #f9d58d;
+      background: rgba(41, 29, 8, 0.9);
+      font-size: 10px;
+      line-height: 1.45;
+      text-align: center;
+      transform: translateX(-50%);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    .app-shell[data-audience="customer"] .gate-banner { display: block; }
+    .app-shell[data-audience="customer"] .topic-meta strong,
+    .app-shell[data-audience="customer"] .statusbar span:last-child { display: none; }
+
+    .map-popup {
+      position: absolute;
+      z-index: 12;
+      display: none;
+      width: 240px;
+      padding: 12px;
+      border: 1px solid var(--line-strong);
+      background: rgba(2, 17, 27, 0.96);
+      box-shadow: var(--shadow);
+      pointer-events: none;
+    }
+
+    .map-popup.is-visible { display: block; }
+
+    .popup-type {
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .popup-title {
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 720;
+    }
+
+    .popup-copy {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .map-point { cursor: pointer; }
+    .map-point circle { transition: transform 150ms ease, filter 150ms ease; transform-origin: center; }
+    .map-point:hover circle { filter: brightness(1.35); transform: scale(1.2); }
+
+    .map-legend {
+      position: absolute;
+      bottom: 177px;
+      left: 14px;
+      z-index: 8;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px 14px;
+      max-width: calc(100% - 28px);
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(2, 14, 23, 0.84);
+      font-size: 9px;
+      backdrop-filter: blur(10px);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .legend-swatch {
+      width: 10px;
+      height: 6px;
+      border: 1px solid var(--cyan);
+      background: rgba(72, 219, 245, 0.18);
+    }
+
+    .legend-swatch.point {
+      width: 7px;
+      height: 7px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .legend-swatch.asset {
+      border-color: var(--green);
+      background: rgba(110, 231, 183, 0.18);
+    }
+
+    .legend-swatch.uncertain {
+      border-style: dashed;
+      border-color: var(--amber);
+      background: rgba(247, 189, 74, 0.1);
+    }
+
+    .timeline-panel {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      left: 14px;
+      z-index: 10;
+      min-height: 148px;
+      padding: 13px 15px 12px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(3, 24, 38, 0.94), rgba(2, 13, 22, 0.97));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .timeline-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .timeline-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .timeline-title strong {
+      font-size: 12px;
+    }
+
+    .timeline-title span {
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .timeline-current {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .timeline-control {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      margin-top: 13px;
+    }
+
+    .icon-button {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line-strong);
+      color: var(--cyan);
+      background: rgba(72, 219, 245, 0.07);
+    }
+
+    .timeline-track-wrap {
+      position: relative;
+      padding-top: 5px;
+    }
+
+    .timeline-range {
+      width: 100%;
+      height: 3px;
+      margin: 0;
+      accent-color: var(--cyan);
+      cursor: pointer;
+    }
+
+    .timeline-nodes {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      margin-top: 9px;
+    }
+
+    .timeline-node {
+      min-width: 0;
+      border: 0;
+      color: var(--dim);
+      text-align: center;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .timeline-node strong,
+    .timeline-node span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .timeline-node strong {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 600;
+    }
+
+    .timeline-node span {
+      margin-top: 3px;
+      font-size: 9px;
+    }
+
+    .timeline-node.is-active { color: var(--cyan-soft); }
+    .timeline-node.is-future { opacity: 0.42; }
+    .timeline-node.is-post strong::after { color: var(--amber); content: " · 后验"; }
+
+    .right-panel {
+      grid-column: 3;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--line);
+      box-shadow: -12px 0 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .inspector-head {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(12, 54, 72, 0.28), transparent 60%);
+    }
+
+    .inspector-kicker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .inspector-kicker span:last-child { color: var(--muted); }
+
+    .inspector-title {
+      margin: 8px 0 4px;
+      font-size: 15px;
+      font-weight: 740;
+      line-height: 1.35;
+    }
+
+    .inspector-subtitle {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .metric-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 9px 6px 8px;
+      border-right: 1px solid var(--line);
+    }
+
+    .metric:last-child { border-right: 0; }
+    .metric span { display: block; color: var(--dim); font-size: 8px; letter-spacing: 0.05em; }
+    .metric strong { display: block; overflow: hidden; margin-top: 4px; color: var(--cyan-soft); font-family: var(--mono); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+
+    .inspector-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      min-height: 42px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .inspector-tabs button {
+      border: 0;
+      border-right: 1px solid rgba(77, 195, 227, 0.12);
+      color: var(--muted);
+      background: rgba(2, 14, 23, 0.4);
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .inspector-tabs button:last-child { border-right: 0; }
+    .inspector-tabs button.is-active { color: var(--cyan); background: rgba(72, 219, 245, 0.06); box-shadow: inset 0 -2px 0 var(--cyan); }
+
+    .inspector-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 14px 15px 20px;
+    }
+
+    .assessment-block {
+      position: relative;
+      padding: 13px 13px 13px 15px;
+      border: 1px solid var(--line);
+      background: rgba(5, 29, 44, 0.66);
+    }
+
+    .assessment-block::before {
+      position: absolute;
+      top: 12px;
+      bottom: 12px;
+      left: 0;
+      width: 2px;
+      background: var(--amber);
+      content: "";
+    }
+
+    .assessment-label {
+      color: var(--amber);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .assessment-copy {
+      margin: 7px 0 0;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .quality-note {
+      display: flex;
+      gap: 9px;
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px dashed rgba(247, 189, 74, 0.38);
+      color: #d7bd87;
+      background: rgba(247, 189, 74, 0.045);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .quality-note strong { color: var(--amber); white-space: nowrap; }
+
+    .subheading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 18px 0 9px;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+    }
+
+    .subheading strong { color: var(--text); font-weight: 650; }
+
+    .evidence-list,
+    .task-list,
+    .asset-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .evidence-item,
+    .task-item,
+    .asset-item {
+      padding: 10px 11px;
+      border: 1px solid rgba(77, 195, 227, 0.2);
+      background: rgba(2, 16, 25, 0.55);
+    }
+
+    .evidence-top,
+    .task-top,
+    .asset-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .evidence-source,
+    .task-name,
+    .asset-name {
+      overflow: hidden;
+      font-size: 11px;
+      font-weight: 680;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .evidence-state,
+    .task-state,
+    .asset-state {
+      padding: 2px 6px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 8px;
+      white-space: nowrap;
+    }
+
+    .state-support { color: var(--green); }
+    .state-refute { color: var(--red); }
+    .state-pending { color: var(--amber); }
+    .state-context { color: var(--purple); }
+    .state-task { color: var(--cyan); }
+
+    .evidence-copy,
+    .task-copy,
+    .asset-copy {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .evidence-meta,
+    .task-meta,
+    .asset-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      margin-top: 7px;
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .action-row button {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      color: var(--cyan-soft);
+      background: rgba(72, 219, 245, 0.055);
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .action-row button:hover { border-color: var(--line-strong); }
+
+    .statusbar {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px;
+      border-top: 1px solid var(--line);
+      color: var(--dim);
+      background: #020a11;
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.04em;
+      z-index: 40;
+    }
+
+    .statusbar strong { color: var(--cyan); font-weight: 600; }
+
+    .mobile-nav,
+    .mobile-overlay { display: none; }
+
+    dialog {
+      width: min(980px, calc(100vw - 36px));
+      max-height: calc(100svh - 40px);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      color: var(--text);
+      background: #041522;
+      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.72);
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 7, 12, 0.78);
+      backdrop-filter: blur(6px);
+    }
+
+    .dialog-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(120deg, rgba(18, 83, 105, 0.25), transparent 60%);
+    }
+
+    .dialog-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .dialog-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .dialog-close {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--line);
+      color: var(--cyan);
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .dialog-body {
+      max-height: calc(100svh - 125px);
+      overflow: auto;
+      padding: 20px;
+    }
+
+    .foundation-flow {
+      display: grid;
+      grid-template-columns: 1fr 150px 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .topic-spec,
+    .shared-core {
+      border: 1px solid var(--line);
+      background: rgba(3, 22, 34, 0.72);
+    }
+
+    .topic-spec { padding: 16px; }
+    .topic-spec h3 { margin: 0 0 5px; font-size: 14px; }
+    .topic-spec > p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+
+    .spec-list {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 12px;
+      margin-top: 15px;
+      font-size: 10px;
+    }
+
+    .spec-list dt { color: var(--dim); }
+    .spec-list dd { margin: 0; color: var(--cyan-soft); font-family: var(--mono); }
+
+    .shared-core {
+      display: grid;
+      place-items: center;
+      padding: 14px 10px;
+      border-color: var(--cyan);
+      text-align: center;
+      box-shadow: inset 0 0 30px rgba(72, 219, 245, 0.06);
+    }
+
+    .shared-core strong { display: block; color: var(--cyan); font-size: 13px; }
+    .shared-core span { display: block; margin-top: 7px; color: var(--muted); font-size: 9px; line-height: 1.5; }
+
+    .reuse-table {
+      width: 100%;
+      margin-top: 18px;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+
+    .reuse-table th,
+    .reuse-table td {
+      padding: 9px 10px;
+      border: 1px solid rgba(77, 195, 227, 0.18);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .reuse-table th { color: var(--cyan-soft); background: rgba(72, 219, 245, 0.05); }
+    .reuse-table td { color: var(--muted); line-height: 1.5; }
+    .reuse-table td:first-child { color: var(--text); font-weight: 650; }
+
+    .prototype-note {
+      margin-top: 16px;
+      padding: 11px 13px;
+      border-left: 2px solid var(--amber);
+      color: #d8c49b;
+      background: rgba(247, 189, 74, 0.05);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 48px;
+      z-index: 100;
+      max-width: 320px;
+      padding: 10px 12px;
+      border: 1px solid var(--line-strong);
+      color: var(--cyan-soft);
+      background: rgba(3, 22, 34, 0.96);
+      box-shadow: var(--shadow);
+      font-size: 10px;
+      line-height: 1.45;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: 180ms ease;
+    }
+
+    .toast.is-visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 1280px) {
+      .app-shell {
+        grid-template-columns: 250px minmax(0, 1fr) 330px;
+      }
+      .topbar { grid-template-columns: 250px minmax(0, 1fr) auto; }
+      .brand { padding: 0 12px; }
+      .top-context { padding: 0 14px; }
+      .topic-scroll { padding: 10px; }
+      .right-panel { font-size: 95%; }
+    }
+
+    @media (max-width: 800px) {
+      html, body { overflow: hidden; }
+      .app-shell {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 58px minmax(0, 1fr) 52px;
+        min-width: 0;
+      }
+      .topbar {
+        grid-column: 1;
+        grid-row: 1;
+        grid-template-columns: 58px minmax(0, 1fr) auto;
+      }
+      .brand { justify-content: center; padding: 0; border-right: 0; }
+      .brand-mark { width: 30px; height: 30px; }
+      .brand-copy,
+      .context-subtitle,
+      .context-tag,
+      .top-actions .ghost-button { display: none; }
+      .top-context { padding: 0 8px; }
+      .context-title { font-size: 12px; }
+      .top-actions { padding-right: 8px; }
+      .segmented button { min-height: 27px; padding: 0 7px; font-size: 9px; }
+      .workspace { grid-column: 1; grid-row: 2; }
+      .statusbar { display: none; }
+      .left-panel,
+      .right-panel {
+        position: fixed;
+        top: 58px;
+        bottom: 52px;
+        z-index: 80;
+        width: min(340px, calc(100vw - 34px));
+        transition: transform 180ms ease;
+      }
+      .left-panel { left: 0; transform: translateX(-105%); }
+      .right-panel { right: 0; transform: translateX(105%); }
+      .left-panel.mobile-open,
+      .right-panel.mobile-open { transform: translateX(0); }
+      .mobile-overlay {
+        position: fixed;
+        inset: 58px 0 52px;
+        z-index: 70;
+        display: none;
+        border: 0;
+        background: rgba(0, 7, 12, 0.62);
+      }
+      .mobile-overlay.is-visible { display: block; }
+      .mobile-nav {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 90;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        height: 52px;
+        border-top: 1px solid var(--line);
+        background: #03101a;
+      }
+      .mobile-nav button {
+        border: 0;
+        border-right: 1px solid var(--line);
+        color: var(--muted);
+        background: transparent;
+        font-size: 10px;
+      }
+      .mobile-nav button:last-child { border-right: 0; }
+      .mobile-nav button.is-active { color: var(--cyan); background: rgba(72, 219, 245, 0.055); }
+      .map-toolbar { top: 8px; right: 8px; left: 8px; }
+      .map-search { display: none; }
+      .map-title-box { max-width: calc(100vw - 16px); padding: 8px 10px; }
+      .map-title { font-size: 11px; }
+      .map-precision { font-size: 8px; }
+      .gate-banner { top: 72px; }
+      .map-legend { bottom: 144px; left: 8px; padding: 6px 8px; }
+      .timeline-panel { right: 8px; bottom: 8px; left: 8px; min-height: 128px; padding: 10px; }
+      .timeline-current { display: none; }
+      .timeline-control { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; margin-top: 9px; }
+      .icon-button { width: 30px; height: 30px; }
+      .timeline-node span { display: none; }
+      .foundation-flow { grid-template-columns: 1fr; }
+      .shared-core { min-height: 100px; }
+      .reuse-table { min-width: 720px; }
+      .dialog-body { overflow-x: auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="appShell" data-topic="may" data-audience="internal">
+    <header class="topbar">
+      <div class="brand" aria-label="DYINT 多源情报研判">
+        <div class="brand-mark" aria-hidden="true"><span>DY</span></div>
+        <div class="brand-copy">
+          <strong>多源情报研判</strong>
+          <small>DYNAMIC INTELLIGENCE</small>
+        </div>
+      </div>
+      <div class="top-context">
+        <div class="context-line">
+          <span class="context-title" id="topTitle"></span>
+          <span class="context-tag">历史专题 · 非实时</span>
+        </div>
+        <div class="context-subtitle" id="topSubtitle"></div>
+      </div>
+      <div class="top-actions">
+        <div class="segmented" aria-label="展示受众">
+          <button type="button" class="is-active" data-audience="internal">内部视图</button>
+          <button type="button" data-audience="customer">客户视图</button>
+        </div>
+        <button type="button" class="ghost-button" id="openArchitecture">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h6v5H4zM14 13h6v5h-6zM15 4h5v5h-5zM4 15h6v5H4zM10 8h5M7 11v4M17 9v4M10 18h4"/></svg>
+          复用边界
+        </button>
+      </div>
+    </header>
+
+    <aside class="left-panel" id="leftPanel" aria-label="军事专题列表与共享图层">
+      <div class="panel-tabs" role="tablist" aria-label="左侧模块">
+        <button type="button" role="tab" aria-selected="false">军事本体</button>
+        <button type="button" class="is-active" role="tab" aria-selected="true">军事专题</button>
+      </div>
+      <div class="topic-scroll">
+        <div class="section-heading"><span>DYINT 场景 2</span><code>2 topics / 1 core</code></div>
+        <button type="button" class="topic-card is-active" data-topic="may" aria-pressed="true">
+          <div class="topic-kind"><span class="topic-index">专题 01</span><span>EVENT CASE</span></div>
+          <div class="topic-name">阿曼外海油轮安全事件</div>
+          <div class="topic-window">2026-05-22 → 05-28</div>
+          <div class="topic-meta"><span>单事件证据闭环</span><strong>dyint_sc2_20260526</strong></div>
+        </button>
+        <button type="button" class="topic-card" data-topic="june" aria-pressed="false">
+          <div class="topic-kind"><span class="topic-index">专题 02</span><span>RISK WINDOW</span></div>
+          <div class="topic-name">霍尔木兹航运风险窗口</div>
+          <div class="topic-window">2026-06-09 → 06-23</div>
+          <div class="topic-meta"><span>区域风险与保护对象</span><strong>dyint_sc2_20260610_12</strong></div>
+        </button>
+
+        <div class="shared-box">
+          <div class="section-heading"><span>共享地图图层</span><code>SHARED</code></div>
+          <label class="layer-row">
+            <span class="layer-name"><i class="layer-dot"></i>风险范围 / 事件区</span>
+            <span class="switch"><input type="checkbox" data-layer="area" checked><span></span></span>
+          </label>
+          <label class="layer-row">
+            <span class="layer-name"><i class="layer-dot amber"></i>AIS / ADS-B 摘要</span>
+            <span class="switch"><input type="checkbox" data-layer="telemetry" checked><span></span></span>
+          </label>
+          <label class="layer-row">
+            <span class="layer-name"><i class="layer-dot green"></i>港口 / 保护对象</span>
+            <span class="switch"><input type="checkbox" data-layer="assets" checked><span></span></span>
+          </label>
+          <label class="layer-row">
+            <span class="layer-name"><i class="layer-dot purple"></i>海事通告 / 证据</span>
+            <span class="switch"><input type="checkbox" data-layer="evidence" checked><span></span></span>
+          </label>
+        </div>
+
+        <div class="foundation-note">
+          <strong>两个专题，不是一个专题的两页</strong>
+          独立 topic ID、bundle、时间线与验收叙事；共用 API、地图渲染、详情、回放、授权和质量门禁。
+        </div>
+      </div>
+    </aside>
+
+    <main class="workspace" aria-label="专题地图与时间回放">
+      <div class="map-stage">
+        <svg id="situationMap" viewBox="0 0 1000 640" role="img" aria-labelledby="mapSvgTitle mapSvgDesc" preserveAspectRatio="xMidYMid slice">
+          <title id="mapSvgTitle">霍尔木兹与阿曼湾专题示意地图</title>
+          <desc id="mapSvgDesc">示意地图用于演示专题交互，不代表精确边界或真实轨迹。</desc>
+          <defs>
+            <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <pattern id="scanPattern" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 14L14 0" stroke="rgba(72,219,245,.12)" stroke-width="1"/></pattern>
+          </defs>
+          <g opacity="0.65">
+            <path class="map-land map-land-alt" d="M0,55 L196,26 L357,63 L422,116 L401,169 L335,195 L290,242 L206,270 L128,252 L78,213 L0,206 Z"/>
+            <path class="map-land" d="M0,391 L82,335 L198,314 L295,333 L370,369 L430,425 L485,520 L486,640 L0,640 Z"/>
+            <path class="map-land" d="M410,0 L1000,0 L1000,168 L927,186 L853,178 L781,202 L710,210 L663,188 L598,201 L523,166 L455,129 Z"/>
+            <path class="map-land map-land-alt" d="M640,350 L730,317 L826,328 L912,372 L1000,438 L1000,640 L721,640 L687,552 L653,491 L612,429 Z"/>
+            <path class="map-land" d="M516,282 L551,259 L592,272 L585,306 L546,319 L513,307 Z"/>
+          </g>
+          <g opacity="0.8">
+            <path class="coastline" d="M0 391L82 335L198 314L295 333L370 369L430 425L485 520"/>
+            <path class="coastline" d="M410 0L455 129L523 166L598 201L663 188L710 210L781 202L853 178L927 186L1000 168"/>
+            <path class="coastline" d="M640 350L730 317L826 328L912 372L1000 438"/>
+          </g>
+          <g aria-hidden="true">
+            <text class="map-label" x="276" y="395">UNITED ARAB EMIRATES</text>
+            <text class="map-label" x="646" y="392">OMAN</text>
+            <text class="map-label" x="700" y="118">IRAN</text>
+            <text class="map-label small" x="432" y="290">Hormuz</text>
+            <text class="map-label small" x="367" y="338">Fujairah</text>
+            <text class="map-label small" x="567" y="351">Sohar</text>
+            <text class="map-label small" x="742" y="452">Muscat</text>
+            <text class="map-label water" x="485" y="252">STRAIT OF HORMUZ</text>
+            <text class="map-label water" x="658" y="304">GULF OF OMAN</text>
+            <text class="map-label water" x="245" y="255">ARABIAN GULF</text>
+          </g>
+          <g id="dynamicMapLayers"></g>
+        </svg>
+        <div class="map-toolbar">
+          <div class="map-title-box">
+            <div class="map-kicker" id="mapKicker"></div>
+            <div class="map-title" id="mapTitle"></div>
+            <div class="map-precision" id="mapPrecision"></div>
+          </div>
+          <div class="map-search" aria-label="搜索示意">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16.2 16.2 4 4"/></svg>
+            搜索专题、港口或证据编号…
+          </div>
+        </div>
+        <div class="gate-banner" id="gateBanner"></div>
+        <div class="map-popup" id="mapPopup" role="status" aria-live="polite">
+          <div class="popup-type" id="popupType"></div>
+          <div class="popup-title" id="popupTitle"></div>
+          <div class="popup-copy" id="popupCopy"></div>
+        </div>
+        <div class="map-legend" aria-label="地图图例">
+          <span class="legend-item"><i class="legend-swatch"></i>关注范围</span>
+          <span class="legend-item"><i class="legend-swatch point"></i>海事事件/通告</span>
+          <span class="legend-item"><i class="legend-swatch asset"></i>民用保护对象</span>
+          <span class="legend-item"><i class="legend-swatch uncertain"></i>粗筛选/待确认</span>
+        </div>
+        <section class="timeline-panel" aria-label="专题时间回放">
+          <div class="timeline-head">
+            <div class="timeline-title"><strong>专题回放</strong><span id="timelineMode"></span></div>
+            <div class="timeline-current" id="timelineCurrent"></div>
+          </div>
+          <div class="timeline-control">
+            <button type="button" class="icon-button" id="playTimeline" aria-label="播放专题回放">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path id="playIcon" d="m8 5 11 7-11 7z"/></svg>
+            </button>
+            <div class="timeline-track-wrap">
+              <input class="timeline-range" id="timelineRange" type="range" min="0" max="4" step="1" value="2" aria-label="专题时间点">
+              <div class="timeline-nodes" id="timelineNodes"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <aside class="right-panel" id="rightPanel" aria-label="专题判断、证据和任务">
+      <div class="inspector-head">
+        <div class="inspector-kicker"><span id="inspectorKind"></span><span id="inspectorPhase"></span></div>
+        <div class="inspector-title" id="inspectorTitle"></div>
+        <div class="inspector-subtitle" id="inspectorSubtitle"></div>
+        <div class="metric-strip">
+          <div class="metric"><span>RISK BAND</span><strong id="riskBand"></strong></div>
+          <div class="metric"><span>SCORE</span><strong id="riskScore"></strong></div>
+          <div class="metric"><span>RESPONSE</span><strong id="responseState"></strong></div>
+        </div>
+      </div>
+      <div class="inspector-tabs" role="tablist" aria-label="专题详情视图">
+        <button type="button" class="is-active" data-panel="judgement" role="tab" aria-selected="true">当前判断</button>
+        <button type="button" data-panel="evidence" role="tab" aria-selected="false">证据矩阵</button>
+        <button type="button" data-panel="tasks" role="tab" aria-selected="false">保护任务</button>
+      </div>
+      <div class="inspector-body" id="inspectorBody"></div>
+    </aside>
+
+    <footer class="statusbar">
+      <span><strong>PROTOTYPE</strong> · 内置示意数据 · 无外部网络请求 · 不代表精确地理边界</span>
+      <span id="statusMessage">TOPIC FOUNDATION: SHARED · SELECTED: dyint_sc2_20260526</span>
+    </footer>
+
+    <button type="button" class="mobile-overlay" id="mobileOverlay" aria-label="关闭侧栏"></button>
+    <nav class="mobile-nav" aria-label="移动端面板切换">
+      <button type="button" data-mobile="left">专题</button>
+      <button type="button" class="is-active" data-mobile="map">地图</button>
+      <button type="button" data-mobile="right">研判</button>
+    </nav>
+  </div>
+
+  <dialog id="architectureDialog" aria-labelledby="architectureTitle">
+    <div class="dialog-head">
+      <div>
+        <h2 id="architectureTitle">两个军事专题，一套共享专题底座</h2>
+        <p>专题业务语义独立；数据契约、运行接口和页面组件共用。以下结构也是后续 `gintbroker` 实现的边界。</p>
+      </div>
+      <button type="button" class="dialog-close" id="closeArchitecture" aria-label="关闭">×</button>
+    </div>
+    <div class="dialog-body">
+      <div class="foundation-flow">
+        <section class="topic-spec">
+          <h3>专题 01 · 5 月商船安全事件</h3>
+          <p>围绕一个已报告海事事件，强调事实边界、身份候选、二次确认与事件响应。</p>
+          <dl class="spec-list">
+            <dt>topic_id</dt><dd>dyint_sc2_20260526</dd>
+            <dt>topic_kind</dt><dd>event_case</dd>
+            <dt>主空间对象</dt><dd>incident_area</dd>
+            <dt>时间线</dt><dd>05-22 → 05-28</dd>
+            <dt>独有能力</dt><dd>vessel_identity_candidate</dd>
+          </dl>
+        </section>
+        <div class="shared-core">
+          <div>
+            <strong>SHARED CORE</strong>
+            <span>TopicBundle schema<br>/bundle + /timeline<br>map / detail / replay<br>quality + audience gates</span>
+          </div>
+        </div>
+        <section class="topic-spec">
+          <h3>专题 02 · 6 月霍尔木兹风险窗口</h3>
+          <p>围绕一个区域风险窗口，强调主张冲突、后验隔离、通行背景与民用保护对象。</p>
+          <dl class="spec-list">
+            <dt>topic_id</dt><dd>dyint_sc2_20260610_12</dd>
+            <dt>topic_kind</dt><dd>risk_window</dd>
+            <dt>主空间对象</dt><dd>risk_area</dd>
+            <dt>时间线</dt><dd>06-09 → 06-23</dd>
+            <dt>独有能力</dt><dd>closure_claim / protected_asset</dd>
+          </dl>
+        </section>
+      </div>
+
+      <table class="reuse-table">
+        <thead><tr><th>层次</th><th>共享一次建设</th><th>5 月专题配置</th><th>6 月专题配置</th></tr></thead>
+        <tbody>
+          <tr><td>数据工程</td><td>manifest、时间门禁、AIS/ADS-B 分块读取、质量码、脱敏、bundle exporter</td><td>事件/身份候选规则</td><td>主张聚类/设施目录规则</td></tr>
+          <tr><td>后端</td><td>通用 TopicBundle schema、缓存、audience fail-closed、`/bundle`、`/timeline`</td><td>独立 bundle</td><td>独立 bundle</td></tr>
+          <tr><td>前端</td><td>`selectedTopicId`、`activeTopicIds`、GeoJSON builder、详情、回放、状态矩阵</td><td>单事件布局配置</td><td>区域风险/保护对象配置</td></tr>
+          <tr><td>验收</td><td>HIMARS 兼容、Console/Network、3 桌面视口、客户门禁</td><td>事件闭环 6 画面</td><td>风险窗口 6 画面</td></tr>
+        </tbody>
+      </table>
+      <div class="prototype-note">
+        本 HTML 是评审交互和信息架构的 Mock，不是运行时页面，也不加载真实 AIS/ADS-B、新闻、设施图片或外部服务。评审通过后，真实实现仍应落在 `gintbroker` 现有军事专题外壳中；本文件继续留在 `dy-inta` 作为设计决策记录。
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const topics = {
+      may: {
+        topicId: "dyint_sc2_20260526",
+        kind: "EVENT CASE",
+        title: "阿曼外海油轮安全事件后的航运风险验证",
+        shortTitle: "阿曼外海油轮安全事件",
+        subtitle: "单船 / 单事件证据闭环 · UKMTO 062-26 · 历史专题回放",
+        mapKicker: "TOPIC 01 · EVENT-CENTRIC",
+        mapTitle: "Muscat 以东报告位置范围与周边航运背景",
+        precision: "粗筛选范围 · 非精确事件点 · AIS/ADS-B 仅作区域摘要",
+        gate: "客户 Gate 未通过：正式 AOI、遥测展示许可与截图许可仍待确认；当前仅用于内部评审。",
+        timelineMode: "EVENT / VERIFY / MONITOR",
+        quality: "目标船身份仍为 withheld / candidate；本地遥测未绑定目标船，不能用于证明事件或攻击方。",
+        steps: [
+          { date: "05-22", label: "区域背景", score: 25, band: "background", response: "observe", phase: "regional_context", summary: "异地海事通告出现小型船只接近油轮事件，只作为区域背景，不标为本事件直接前兆。", visibleEvidence: 1 },
+          { date: "05-23", label: "二次接近", score: 35, band: "elevated", response: "verify", phase: "regional_context", summary: "第二起异地接近事件使关注度上升，但空间关联不足，仍需核验同 AOI 运营变化。", visibleEvidence: 2 },
+          { date: "05-26", label: "事件报告", score: 65, band: "protective_readiness", response: "event_response", phase: "event_result", summary: "UKMTO 收到一艘油轮报告外部爆炸。系统进入事件响应、身份核验与附近航运风险评估。", visibleEvidence: 5 },
+          { date: "05-27", label: "持续监测", score: 55, band: "protective_readiness", response: "monitoring", phase: "post_event_monitoring", summary: "继续核验目标船、环境影响和港口运营信息；遥测覆盖不足保持显式提示。", visibleEvidence: 6 },
+          { date: "05-28", label: "信息冲突", score: 50, band: "protective_readiness", response: "verify", phase: "claim_conflict", summary: "无人机与油轮折返主张出现，来源混杂；系统将其降级为待确认，不回填 5 月 26 日前评分。", visibleEvidence: 8 }
+        ],
+        evidence: [
+          { id: "MAY22-JMIC-059", state: "context", source: "JMIC / UKMTO", time: "05-22", phase: 0, text: "异地小型船只接近油轮事件，为区域背景，不能直接证明主事件前兆。" },
+          { id: "MAY23-JMIC-060", state: "context", source: "JMIC / UKMTO", time: "05-23", phase: 1, text: "产品油轮再次遭接近，支持提升关注，但与主事件 AOI 不同。" },
+          { id: "MAY26-UKMTO-062", state: "support", source: "UKMTO Warning", time: "05-26 09:45Z", phase: 2, text: "一艘油轮在 Muscat 以东约 60NM 报告外部爆炸；人员和船舶安全。" },
+          { id: "MAY26-JMIC-050", state: "support", source: "JMIC Update", time: "05-26 · 后验汇总", phase: 2, text: "海事态势通告将事件纳入结果清单；仅用于结果核验。", post: true },
+          { id: "MAY26-AIS-01", state: "pending", source: "海贝 AIS 摘要", time: "05-20 → 05-28", phase: 2, text: "主 AOI 有少量活动点，但未绑定目标船，仅能说明区域通行背景。" },
+          { id: "MAY26-ADSB-01", state: "context", source: "海贝 ADS-B 摘要", time: "05-20 → 05-28", phase: 3, text: "航空背景不连续、身份质量不足，不参与事件事实判断。" },
+          { id: "MAY28-TASS-01", state: "pending", source: "媒体转述", time: "05-28", phase: 4, text: "无人机威胁商船主张，属于匿名源转述，保持待确认。" },
+          { id: "MAY28-PRESSTV-01", state: "pending", source: "单方媒体", time: "05-28", phase: 4, text: "油轮被迫折返说法只作为信息冲突样例，不当事实。" }
+        ],
+        tasks: [
+          { name: "核验目标船登记信息", owner: "海事情报", priority: "P0", state: "进行中", text: "补 IMO/MMSI/船旗登记源；未核验前客户版固定显示“油轮 A”。" },
+          { name: "审批正式事件 AOI", owner: "GIS / 产品", priority: "P0", state: "待确认", text: "把“Muscat 以东约 60NM”转换为有来源、版本与精度说明的范围。" },
+          { name: "补天气海况与污染通告", owner: "数据 / 应急", priority: "P1", state: "未开始", text: "用于解释环境影响和低速/等待，不作为攻击归因。" },
+          { name: "归档保护性报告", owner: "值班主管", priority: "P1", state: "草稿", text: "输出附近船舶关注、港口通知、持续监测和证据缺口。" }
+        ],
+        assets: [
+          { name: "Muscat / Gulf of Oman 航线", kind: "航运通道", state: "持续监测", text: "区域通行与等待摘要；不展示逐船轨迹。" },
+          { name: "Sohar / Fujairah 港口进近", kind: "港口运营", state: "影响待核验", text: "关注靠泊计划、锚地拥堵和通知口径。" },
+          { name: "油轮与能源供应链", kind: "保护对象", state: "关注窗口", text: "只输出保护性准备，不输出拦截或行动建议。" }
+        ],
+        areaPath: "M542 296 C602 252 712 246 784 291 C822 315 818 360 774 384 C690 422 575 394 531 349 Z",
+        routePath: "M310 350 C430 324 538 319 648 337 C745 351 828 347 930 300",
+        telemetry: [[454,329],[481,342],[515,323],[587,347],[630,330],[688,365],[740,335],[803,347]],
+        markers: [
+          { x: 735, y: 330, type: "海事事件", title: "UKMTO 062-26 报告范围", copy: "示意位置范围，非精确事件点；点击右侧查看证据。", color: "#f7bd4a", layer: "evidence" },
+          { x: 565, y: 351, type: "港口进近", title: "Sohar 运营关注", copy: "附近船舶与港口影响仍需运营数据核验。", color: "#6ee7b7", layer: "assets" },
+          { x: 368, y: 337, type: "港口进近", title: "Fujairah 关注区", copy: "客户相关港口进近背景；当前为粗筛选范围。", color: "#6ee7b7", layer: "assets" }
+        ]
+      },
+      june: {
+        topicId: "dyint_sc2_20260610_12",
+        kind: "RISK WINDOW",
+        title: "霍尔木兹及阿曼湾航运安全风险上升与保护性准备",
+        shortTitle: "霍尔木兹航运风险窗口",
+        subtitle: "区域风险 / 主张冲突 / 民用保护对象 · 6 月 9–12 日主窗口",
+        mapKicker: "TOPIC 02 · REGION-CENTRIC",
+        mapTitle: "霍尔木兹—阿曼湾风险范围、通行背景与民用保护对象",
+        precision: "6 月 9 日为前置观察，非稳定常态基线 · 后验信息默认隔离",
+        gate: "客户 Gate 未通过：正式 AOI、AIS 速度单位、设施展示许可与客户截图许可仍待确认。",
+        timelineMode: "PRE-WINDOW / IN-WINDOW / POST-EVENT",
+        quality: "“全面关闭”是待核验命题；AIS/ADS-B 只表达区域活动和覆盖质量，设施状态固定为 not_assessed。",
+        steps: [
+          { date: "06-09", label: "前置观察", score: 25, band: "background", response: "observe", phase: "pre_window", summary: "公开冲突主张与单方官方发布进入同窗。6 月 9 日只称前置观察，不称稳定常态。", visibleEvidence: 1 },
+          { date: "06-10", label: "风险上升", score: 45, band: "elevated", response: "verify", phase: "in_window", summary: "冲突升级进入商业航运安全语境；“全面关闭”仍是待确认主张。", visibleEvidence: 3 },
+          { date: "06-11", label: "证据冲突", score: 48, band: "elevated", response: "verify", phase: "in_window", summary: "支持与反证并列；当前可确认风险升高，不能确认海峡全面关闭。", visibleEvidence: 5 },
+          { date: "06-12", label: "持续监测", score: 46, band: "elevated", response: "monitoring", phase: "in_window", summary: "遥测和通行背景保持稀疏，继续监测港口进近和保护对象，不强行升级到保护性准备。", visibleEvidence: 6 },
+          { date: "06-14+", label: "后验核验", score: 46, band: "elevated", response: "archive", phase: "post_event_confirmation", summary: "6 月 14/21/23 海事更新只增加结果置信度，score_delta=0，不改写 6 月 9–12 日历史分数。", visibleEvidence: 8, post: true }
+        ],
+        evidence: [
+          { id: "JUN10-CENTCOM-01", state: "context", source: "CENTCOM", time: "06-09", phase: 0, text: "单方官方发布支持区域风险背景升高，不证明具体海事结果。" },
+          { id: "JUN10-CENTCOM-02", state: "support", source: "CENTCOM", time: "06-10", phase: 1, text: "冲突升级进入商业航运安全语境，触发风险窗口核验。" },
+          { id: "JUN10-NEWS-CLOSURE", state: "pending", source: "媒体主张簇", time: "06-10", phase: 1, text: "“全面关闭”标题已拆为独立命题，不能仅凭转载数量升级为事实。" },
+          { id: "JUN10-XINHUA-01", state: "pending", source: "新华社综合", time: "06-11", phase: 2, text: "关闭主张与否认并存，支持证据分层而非单向结论。" },
+          { id: "JUN10-TRAFFIC-CONTEXT", state: "refute", source: "通行背景", time: "06-11", phase: 2, text: "现有信息不足以支持全面关闭；持续通行语境构成降级证据。" },
+          { id: "JUN10-AIS-01", state: "context", source: "海贝 AIS 摘要", time: "06-09 → 06-12", phase: 3, text: "区域记录稀疏；速度单位未确认，不输出低速或故意关 AIS 结论。" },
+          { id: "JUN10-UKMTO-01", state: "refute", source: "UKMTO / JMIC", time: "06-14 · 后验", phase: 4, text: "风险升高但通行仍在风险敏感环境继续；仅在后验游标显示。", post: true },
+          { id: "JUN10-UKMTO-02", state: "support", source: "UKMTO / JMIC", time: "06-21/23 · 后验", phase: 4, text: "后续事件清单支持区域商船风险确实升高；不回填历史评分。", post: true }
+        ],
+        tasks: [
+          { name: "核验海峡通行状态", owner: "海事值班", priority: "P0", state: "进行中", text: "补 UKMTO Warning、NAVAREA、港口公告和独立运营证据。" },
+          { name: "审批正式 AOI / TSS", owner: "GIS / 产品", priority: "P0", state: "待确认", text: "粗 bbox 与参考裁剪不得直接升级为正式航道和锚地范围。" },
+          { name: "确认设施展示许可", owner: "项目 / 售前", priority: "P0", state: "待确认", text: "客户视图只允许公共、泛化位置；设施状态保持 not_assessed。" },
+          { name: "补事件绑定影像或运营数据", owner: "数据 / 影像", priority: "P1", state: "未开始", text: "现有卫星样例不绑定本窗口，只能作为任务方法说明。" }
+        ],
+        assets: [
+          { name: "Sohar / Fujairah 港口进近", kind: "港口", state: "not_assessed", text: "监测通行与运营连续性，不暗示受损。" },
+          { name: "油气设施与能源供应链", kind: "油气", state: "not_assessed", text: "仅作为风险外溢保护对象，位置按公共中心点或区域泛化。" },
+          { name: "电力 / 海水淡化 / 水务", kind: "公用设施", state: "not_assessed", text: "关注服务连续性，不展示精确组件坐标与脆弱性。" }
+        ],
+        areaPath: "M322 220 C400 168 560 167 665 211 C730 239 733 308 670 347 C575 405 407 391 315 330 C270 300 273 254 322 220 Z",
+        routePath: "M190 268 C305 285 408 280 507 268 C624 253 729 275 875 324",
+        telemetry: [[300,272],[342,287],[395,273],[438,292],[489,265],[531,288],[585,274],[632,296],[681,285]],
+        markers: [
+          { x: 452, y: 258, type: "风险命题", title: "霍尔木兹通行状态", copy: "“全面关闭”支持、反证和待确认必须并列显示。", color: "#f7bd4a", layer: "evidence" },
+          { x: 567, y: 351, type: "民用保护对象", title: "Sohar 港口进近", copy: "目录对象，damage_status=not_assessed。", color: "#6ee7b7", layer: "assets" },
+          { x: 368, y: 337, type: "民用保护对象", title: "Fujairah 港口进近", copy: "公共/泛化位置，许可未确认时客户视图隐藏具体对象。", color: "#6ee7b7", layer: "assets" },
+          { x: 330, y: 390, type: "民用保护对象", title: "UAE 公用设施类别", copy: "油气、电力、海水淡化仅作保护对象类别。", color: "#6ee7b7", layer: "assets" }
+        ]
+      }
+    };
+
+    const stateLabels = {
+      support: "支持",
+      refute: "反驳",
+      pending: "待确认",
+      context: "背景",
+      background: "背景关注",
+      elevated: "风险上升",
+      protective_readiness: "保护性准备",
+      verify_now: "立即核验",
+      observe: "观察",
+      verify: "核验",
+      event_response: "事件响应",
+      monitoring: "持续监测",
+      archive: "后验归档"
+    };
+
+    const state = {
+      topic: "may",
+      step: 2,
+      panel: "judgement",
+      audience: "internal",
+      playing: false,
+      timer: null,
+      layers: { area: true, telemetry: true, assets: true, evidence: true }
+    };
+
+    const els = {
+      shell: document.getElementById("appShell"),
+      topTitle: document.getElementById("topTitle"),
+      topSubtitle: document.getElementById("topSubtitle"),
+      mapKicker: document.getElementById("mapKicker"),
+      mapTitle: document.getElementById("mapTitle"),
+      mapPrecision: document.getElementById("mapPrecision"),
+      gateBanner: document.getElementById("gateBanner"),
+      dynamicMap: document.getElementById("dynamicMapLayers"),
+      popup: document.getElementById("mapPopup"),
+      popupType: document.getElementById("popupType"),
+      popupTitle: document.getElementById("popupTitle"),
+      popupCopy: document.getElementById("popupCopy"),
+      timelineMode: document.getElementById("timelineMode"),
+      timelineCurrent: document.getElementById("timelineCurrent"),
+      timelineRange: document.getElementById("timelineRange"),
+      timelineNodes: document.getElementById("timelineNodes"),
+      playTimeline: document.getElementById("playTimeline"),
+      playIcon: document.getElementById("playIcon"),
+      inspectorKind: document.getElementById("inspectorKind"),
+      inspectorPhase: document.getElementById("inspectorPhase"),
+      inspectorTitle: document.getElementById("inspectorTitle"),
+      inspectorSubtitle: document.getElementById("inspectorSubtitle"),
+      riskBand: document.getElementById("riskBand"),
+      riskScore: document.getElementById("riskScore"),
+      responseState: document.getElementById("responseState"),
+      inspectorBody: document.getElementById("inspectorBody"),
+      statusMessage: document.getElementById("statusMessage"),
+      architectureDialog: document.getElementById("architectureDialog"),
+      toast: document.getElementById("toast"),
+      leftPanel: document.getElementById("leftPanel"),
+      rightPanel: document.getElementById("rightPanel"),
+      mobileOverlay: document.getElementById("mobileOverlay")
+    };
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
+    }
+
+    function topicData() { return topics[state.topic]; }
+    function stepData() { return topicData().steps[state.step]; }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("is-visible");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => els.toast.classList.remove("is-visible"), 2200);
+    }
+
+    function renderHeader() {
+      const topic = topicData();
+      els.shell.dataset.topic = state.topic;
+      els.shell.dataset.audience = state.audience;
+      els.topTitle.textContent = topic.title;
+      els.topSubtitle.textContent = topic.subtitle;
+      els.mapKicker.textContent = topic.mapKicker;
+      els.mapTitle.textContent = topic.mapTitle;
+      els.mapPrecision.textContent = topic.precision;
+      els.gateBanner.textContent = topic.gate;
+      document.querySelectorAll("[data-topic]").forEach(button => {
+        if (!button.classList.contains("topic-card")) return;
+        const active = button.dataset.topic === state.topic;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      document.querySelectorAll(".segmented button[data-audience]").forEach(button => {
+        button.classList.toggle("is-active", button.dataset.audience === state.audience);
+      });
+      els.statusMessage.textContent = `TOPIC FOUNDATION: SHARED · SELECTED: ${topic.topicId} · AUDIENCE: ${state.audience.toUpperCase()}`;
+    }
+
+    function renderMap() {
+      const topic = topicData();
+      const step = stepData();
+      const areaOpacity = state.layers.area ? 1 : 0;
+      const telemetryOpacity = state.layers.telemetry ? 1 : 0;
+      const availableMarkers = topic.markers.filter(marker => state.layers[marker.layer]);
+      const assetVisibility = state.audience === "customer" && state.topic === "june" ? 0.34 : 1;
+
+      const telemetry = topic.telemetry.map((point, index) => {
+        const active = index <= Math.max(1, Math.round((state.step + 1) / topic.steps.length * topic.telemetry.length));
+        return `<circle cx="${point[0]}" cy="${point[1]}" r="${active ? 3.2 : 2}" fill="${active ? "#48dbf5" : "#537581"}" opacity="${active ? 0.82 : 0.34}"/>`;
+      }).join("");
+
+      const markers = availableMarkers.map((marker, index) => {
+        const opacity = marker.layer === "assets" ? assetVisibility : 1;
+        return `<g class="map-point" data-marker="${index}" data-type="${escapeHtml(marker.type)}" data-title="${escapeHtml(marker.title)}" data-copy="${escapeHtml(marker.copy)}" transform="translate(${marker.x} ${marker.y})" opacity="${opacity}">
+          <circle r="13" fill="none" stroke="${marker.color}" stroke-width="1" opacity=".38"/>
+          <circle r="5" fill="${marker.color}" stroke="#021018" stroke-width="2" filter="url(#softGlow)"/>
+          <path d="M0 8v14" stroke="${marker.color}" stroke-width="1" opacity=".55"/>
+        </g>`;
+      }).join("");
+
+      const closureOverlay = state.topic === "june" && state.step >= 2 && state.layers.evidence
+        ? `<g transform="translate(470 218)">
+            <rect x="-88" y="-20" width="176" height="40" rx="2" fill="rgba(2,14,23,.92)" stroke="#f7bd4a" stroke-dasharray="5 4"/>
+            <text x="0" y="-3" text-anchor="middle" fill="#f7bd4a" font-family="var(--mono)" font-size="9">命题：全面关闭？</text>
+            <text x="0" y="11" text-anchor="middle" fill="#a8c1ca" font-size="8">支持 / 反驳 / 待确认并列</text>
+          </g>`
+        : "";
+
+      els.dynamicMap.innerHTML = `
+        <g opacity="${areaOpacity}">
+          <path d="${topic.areaPath}" fill="url(#scanPattern)" stroke="${step.band === "protective_readiness" ? "#f7bd4a" : "#48dbf5"}" stroke-width="2" stroke-dasharray="8 6" opacity=".86"/>
+          <path d="${topic.routePath}" fill="none" stroke="#8deafa" stroke-width="2" stroke-dasharray="5 8" opacity=".54"/>
+          <path d="${topic.routePath}" fill="none" stroke="#48dbf5" stroke-width="8" opacity=".045"/>
+        </g>
+        <g opacity="${telemetryOpacity}">${telemetry}</g>
+        <g>${markers}</g>
+        ${closureOverlay}
+      `;
+
+      document.querySelectorAll(".map-point").forEach(point => {
+        point.addEventListener("click", event => {
+          const rect = document.querySelector(".workspace").getBoundingClientRect();
+          els.popupType.textContent = point.dataset.type;
+          els.popupTitle.textContent = point.dataset.title;
+          els.popupCopy.textContent = point.dataset.copy;
+          els.popup.style.left = `${Math.min(rect.width - 255, Math.max(12, event.clientX - rect.left + 12))}px`;
+          els.popup.style.top = `${Math.min(rect.height - 310, Math.max(100, event.clientY - rect.top - 20))}px`;
+          els.popup.classList.add("is-visible");
+        });
+      });
+    }
+
+    function renderTimeline() {
+      const topic = topicData();
+      const step = stepData();
+      els.timelineMode.textContent = topic.timelineMode;
+      els.timelineCurrent.textContent = `${step.date} · ${step.label} · ${step.visibleEvidence} 条当时可见证据`;
+      els.timelineRange.max = topic.steps.length - 1;
+      els.timelineRange.value = state.step;
+      els.timelineNodes.style.gridTemplateColumns = `repeat(${topic.steps.length}, 1fr)`;
+      els.timelineNodes.innerHTML = topic.steps.map((item, index) => `
+        <button type="button" class="timeline-node ${index === state.step ? "is-active" : ""} ${index > state.step ? "is-future" : ""} ${item.post ? "is-post" : ""}" data-step="${index}">
+          <strong>${escapeHtml(item.date)}</strong><span>${escapeHtml(item.label)}</span>
+        </button>
+      `).join("");
+      els.playIcon.setAttribute("d", state.playing ? "M7 5h4v14H7zM14 5h4v14h-4z" : "m8 5 11 7-11 7z");
+      els.playTimeline.setAttribute("aria-label", state.playing ? "暂停专题回放" : "播放专题回放");
+      document.querySelectorAll("[data-step]").forEach(button => button.addEventListener("click", () => setStep(Number(button.dataset.step))));
+    }
+
+    function stateClass(value) {
+      return ["support", "refute", "pending", "context"].includes(value) ? `state-${value}` : "state-task";
+    }
+
+    function renderEvidenceList(limit = Infinity) {
+      const topic = topicData();
+      const visible = topic.evidence.filter(item => item.phase <= state.step);
+      const selected = visible.slice(-limit).reverse();
+      return selected.map(item => {
+        const source = state.audience === "customer" ? item.source : `${item.source} · ${item.id}`;
+        return `<article class="evidence-item">
+          <div class="evidence-top"><div class="evidence-source">${escapeHtml(source)}</div><span class="evidence-state ${stateClass(item.state)}">${stateLabels[item.state]}</span></div>
+          <div class="evidence-copy">${escapeHtml(item.text)}</div>
+          <div class="evidence-meta"><span>${escapeHtml(item.time)}</span><span>${item.post ? "后验 · score_delta=0" : "历史游标可见"}</span></div>
+        </article>`;
+      }).join("") || `<div class="quality-note"><strong>暂无证据</strong><span>当前游标之前没有满足可见时间门禁的证据。</span></div>`;
+    }
+
+    function renderJudgement() {
+      const topic = topicData();
+      const step = stepData();
+      const assets = topic.assets.map(item => `<article class="asset-item">
+        <div class="asset-top"><div class="asset-name">${escapeHtml(item.name)}</div><span class="asset-state state-context">${escapeHtml(item.state)}</span></div>
+        <div class="asset-copy">${escapeHtml(item.text)}</div>
+        <div class="asset-meta"><span>${escapeHtml(item.kind)}</span><span>${state.audience === "customer" ? "客户脱敏表达" : "内部目录视图"}</span></div>
+      </article>`).join("");
+
+      return `<section class="assessment-block">
+          <div class="assessment-label">CURRENT ASSESSMENT · ${escapeHtml(step.date)}</div>
+          <p class="assessment-copy">${escapeHtml(step.summary)}</p>
+        </section>
+        <div class="quality-note"><strong>质量边界</strong><span>${escapeHtml(topic.quality)}</span></div>
+        <div class="subheading"><strong>${state.topic === "may" ? "受影响对象" : "民用保护对象"}</strong><span>${topic.assets.length} 类</span></div>
+        <div class="asset-list">${assets}</div>
+        <div class="subheading"><strong>最新可见证据</strong><span>按历史游标过滤</span></div>
+        <div class="evidence-list">${renderEvidenceList(2)}</div>
+        <div class="action-row"><button type="button" data-action="evidence">查看完整证据链</button><button type="button" data-action="tasks">打开保护任务</button></div>`;
+    }
+
+    function renderTasks() {
+      const topic = topicData();
+      return `<div class="quality-note"><strong>只允许保护性动作</strong><span>任务只能用于核验、监测、通知和归档，不输出攻击、拦截或目标优先级建议。</span></div>
+        <div class="subheading"><strong>二次确认与保护任务</strong><span>${topic.tasks.length} 项</span></div>
+        <div class="task-list">${topic.tasks.map(item => `<article class="task-item">
+          <div class="task-top"><div class="task-name">${escapeHtml(item.name)}</div><span class="task-state state-task">${escapeHtml(item.state)}</span></div>
+          <div class="task-copy">${escapeHtml(item.text)}</div>
+          <div class="task-meta"><span>${escapeHtml(item.priority)}</span><span>OWNER: ${escapeHtml(item.owner)}</span></div>
+        </article>`).join("")}</div>
+        <div class="action-row"><button type="button" data-prototype-action="report">生成保护性报告</button><button type="button" data-prototype-action="archive">归档当前判断</button></div>`;
+    }
+
+    function renderInspector() {
+      const topic = topicData();
+      const step = stepData();
+      els.inspectorKind.textContent = state.audience === "customer" ? topic.kind : `${topic.kind} · ${topic.topicId}`;
+      els.inspectorPhase.textContent = step.phase;
+      els.inspectorTitle.textContent = topic.shortTitle;
+      els.inspectorSubtitle.textContent = `${step.date} · ${step.label} · ${step.visibleEvidence} 条当时可见证据`;
+      els.riskBand.textContent = stateLabels[step.band] || step.band;
+      els.riskScore.textContent = `${step.score}/100`;
+      els.responseState.textContent = stateLabels[step.response] || step.response;
+      document.querySelectorAll("[data-panel]").forEach(button => {
+        const active = button.dataset.panel === state.panel;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-selected", String(active));
+      });
+
+      if (state.panel === "evidence") {
+        els.inspectorBody.innerHTML = `<div class="quality-note"><strong>时间门禁</strong><span>仅展示 visible_at 不晚于当前游标的证据；后验证据在早期游标下不可见。</span></div><div class="subheading"><strong>证据矩阵</strong><span>支持 / 反驳 / 待确认 / 背景</span></div><div class="evidence-list">${renderEvidenceList()}</div>`;
+      } else if (state.panel === "tasks") {
+        els.inspectorBody.innerHTML = renderTasks();
+      } else {
+        els.inspectorBody.innerHTML = renderJudgement();
+      }
+
+      els.inspectorBody.querySelectorAll("[data-action]").forEach(button => button.addEventListener("click", () => setPanel(button.dataset.action)));
+      els.inspectorBody.querySelectorAll("[data-prototype-action]").forEach(button => button.addEventListener("click", () => showToast("Mock 仅演示交互：真实报告需由已通过 Gate 的 bundle 生成。")));
+    }
+
+    function render() {
+      renderHeader();
+      renderMap();
+      renderTimeline();
+      renderInspector();
+    }
+
+    function setTopic(topicKey) {
+      if (!topics[topicKey]) return;
+      stopPlayback();
+      state.topic = topicKey;
+      state.step = topicKey === "may" ? 2 : 1;
+      state.panel = "judgement";
+      els.popup.classList.remove("is-visible");
+      render();
+      showToast(`已切换为独立专题：${topics[topicKey].shortTitle}`);
+    }
+
+    function setStep(index) {
+      const max = topicData().steps.length - 1;
+      state.step = Math.max(0, Math.min(max, index));
+      els.popup.classList.remove("is-visible");
+      render();
+    }
+
+    function setPanel(panel) {
+      state.panel = panel;
+      renderInspector();
+    }
+
+    function stopPlayback() {
+      state.playing = false;
+      window.clearInterval(state.timer);
+      state.timer = null;
+    }
+
+    function togglePlayback() {
+      if (state.playing) {
+        stopPlayback();
+        renderTimeline();
+        return;
+      }
+      state.playing = true;
+      renderTimeline();
+      state.timer = window.setInterval(() => {
+        const max = topicData().steps.length - 1;
+        if (state.step >= max) {
+          stopPlayback();
+          renderTimeline();
+          return;
+        }
+        setStep(state.step + 1);
+      }, 1300);
+    }
+
+    function closeMobilePanels() {
+      els.leftPanel.classList.remove("mobile-open");
+      els.rightPanel.classList.remove("mobile-open");
+      els.mobileOverlay.classList.remove("is-visible");
+      document.querySelectorAll("[data-mobile]").forEach(button => button.classList.toggle("is-active", button.dataset.mobile === "map"));
+    }
+
+    document.querySelectorAll(".topic-card").forEach(button => button.addEventListener("click", () => setTopic(button.dataset.topic)));
+    document.querySelectorAll(".segmented button[data-audience]").forEach(button => button.addEventListener("click", () => {
+      state.audience = button.dataset.audience;
+      render();
+      showToast(state.audience === "customer" ? "客户视图启用：未通过 Gate 的内容已降级，并显示阻断提示。" : "已返回内部评审视图。" );
+    }));
+    document.querySelectorAll("[data-layer]").forEach(input => input.addEventListener("change", () => {
+      state.layers[input.dataset.layer] = input.checked;
+      renderMap();
+    }));
+    document.querySelectorAll("[data-panel]").forEach(button => button.addEventListener("click", () => setPanel(button.dataset.panel)));
+    els.timelineRange.addEventListener("input", event => setStep(Number(event.target.value)));
+    els.playTimeline.addEventListener("click", togglePlayback);
+    document.getElementById("openArchitecture").addEventListener("click", () => els.architectureDialog.showModal());
+    document.getElementById("closeArchitecture").addEventListener("click", () => els.architectureDialog.close());
+    els.architectureDialog.addEventListener("click", event => {
+      const rect = els.architectureDialog.getBoundingClientRect();
+      const outside = event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
+      if (outside) els.architectureDialog.close();
+    });
+    els.mobileOverlay.addEventListener("click", closeMobilePanels);
+    document.querySelectorAll("[data-mobile]").forEach(button => button.addEventListener("click", () => {
+      const panel = button.dataset.mobile;
+      if (panel === "map") { closeMobilePanels(); return; }
+      const target = panel === "left" ? els.leftPanel : els.rightPanel;
+      const other = panel === "left" ? els.rightPanel : els.leftPanel;
+      other.classList.remove("mobile-open");
+      target.classList.add("mobile-open");
+      els.mobileOverlay.classList.add("is-visible");
+      document.querySelectorAll("[data-mobile]").forEach(item => item.classList.toggle("is-active", item === button));
+    }));
+    document.addEventListener("keydown", event => {
+      if (event.key === "1") setTopic("may");
+      if (event.key === "2") setTopic("june");
+      if (event.key === " " && !event.target.matches("button, input")) { event.preventDefault(); togglePlayback(); }
+      if (event.key === "Escape") { els.popup.classList.remove("is-visible"); closeMobilePanels(); }
+    });
+    document.querySelector(".workspace").addEventListener("click", event => {
+      if (!event.target.closest(".map-point") && !event.target.closest(".map-popup")) els.popup.classList.remove("is-visible");
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -2,9 +2,9 @@
 
 计划日期：2026-07-10
 
-计划版本：v1.1（已吸收 2026-07-10 存储与可视化反馈）
+计划版本：v1.2（已吸收 2026-07-10 双专题、共享基础与 HTML Mock 反馈）
 
-计划状态：`READY_FOR_REVIEW_WITH_CROSS_REPO_GATES`
+计划状态：`READY_FOR_REVIEW_WITH_PROTOTYPE_GATE`
 
 源文档：`devdoc/DYINT场景2-5月商船攻击候选目标分析与数据补强方案.md`
 
@@ -20,11 +20,13 @@
 - `devdoc/DYINT场景2-3Demo数据规则与补强方案-售前演示方案评审报告.md`
 - `devdoc/DYINT场景2-3Demo客户版演示脚本.md`
 - `devdoc/DYINT场景2-6月10至12日霍尔木兹风险窗口目标包.md`
+- `devdoc/DYINT场景2-6月10至12日霍尔木兹风险窗口目标包-实现计划.md`
+- `devdoc/DYINT场景2双专题交互Mock.html`
 - `/Users/liushen/Documents/cursorDevs/gintbroker/docs/himars-topic-work-plan.md`
 - `/Users/liushen/Documents/cursorDevs/gintbroker/docs/backend_mvp_process.md`
 - `/Users/liushen/Documents/cursorDevs/gintbroker/docs/dev-deploy/构建部署配置链路说明.md`
 
-本计划负责两项闭环：一是把已选定的 `UKMTO 062-26` 商船安全事件整理为可复现、可校验、可脱敏的小型发布包；二是复用 `gintbroker` 现有“军事专题”入口，把发布包展示为 AOI、海事事件、匿名遥测摘要、证据矩阵、专题回放和保护性任务。原始 AIS/ADS-B、Excel、PDF、商业数据和隔离明细始终留在原路径或外部磁盘，不复制进 `dy-inta`、`gintbroker` 或项目根目录临时区。
+本计划负责两项闭环：一是把已选定的 `UKMTO 062-26` 商船安全事件整理为可复现、可校验、可脱敏的小型发布包；二是把它作为独立的 `event_case` 军事专题接入 `gintbroker` 现有“军事专题”入口，展示 AOI、海事事件、匿名遥测摘要、证据矩阵、专题回放和保护性任务。它与 6 月霍尔木兹 `risk_window` 是两个 topic ID、两个 bundle、两条专题时间线，不合并成一个专题的两个页面；两者共用数据工程基础、专题 API、地图渲染、详情、回放、授权和质量门禁。原始 AIS/ADS-B、Excel、PDF、商业数据和隔离明细始终留在原路径或外部磁盘，不复制进 `dy-inta`、`gintbroker` 或项目根目录临时区。
 
 本计划允许后续执行者在用户明确要求按本计划执行时修改 `gintbroker`；本轮只更新计划，不修改 `gintbroker` 代码。`doops-dev`、`moye-v4-product` 仍保持只读/不实施边界。不输出攻击方判断、精确军事目标、武器推断或进攻性行动建议。
 
@@ -33,8 +35,11 @@
 | 反馈 | 处理结论 | 落点 |
 | --- | --- | --- |
 | 原始文件不要搬进项目 `.work/` | `采纳` | 原始文件原地只读；中间文件、隔离记录和公共源缓存改到外部磁盘可配置工作区；仓库只保留小型脱敏发布包 |
-| Demo 基于 `gintbroker` 军事专题呈现 | `采纳` | 删除“独立静态 HTML 是主交付”的路线；新增 `gintbroker` 通用专题 bundle、地图、右侧详情、专题回放、CI 环境回归阶段 |
+| Demo 基于 `gintbroker` 军事专题呈现 | `采纳` | HTML Mock 只作为实施前设计契约；最终运行态仍由 `gintbroker` 通用专题 bundle、地图、右侧详情、专题回放和目标环境回归交付 |
 | `gintbroker` 需要哪些增强 | `采纳` | 现场代码和 API 已确认“入口动态但实体键、图层、详情和 slow payload 仍写死 HIMARS”；计划改为先通用化，再接 DYINT 专题 |
+| 两个 Demo 是一个专题还是两个专题 | `采纳` | 固定为两个独立专题：`dyint_sc2_20260526/event_case` 与 `dyint_sc2_20260610_12/risk_window`；只共享底座，不共享业务状态和时间线 |
+| 共性能力不要重复建设 | `采纳` | 新增数据工程与 `gintbroker` 两层 foundation 探针；首个计划 `bootstrap`，后执行计划必须 `reuse/resume`，禁止复制 API、scanner、validator、source/layer 或详情/回放组件 |
+| 实施前先看可交互效果 | `采纳` | 新增仓库内 `devdoc/DYINT场景2双专题交互Mock.html` 和 T0.5 原型评审 Gate；未获明确确认时不得进入 T1 及后续实现 |
 
 ---
 
@@ -45,6 +50,9 @@
 主事件固定为：
 
 - 事件 ID：`SC2-20260526-MUSCAT-TANKER-ATTACK`
+- 专题 ID：`dyint_sc2_20260526`
+- 专题类型：`topic_kind=event_case`
+- 专题组：`topic_group=dyint_sc2_maritime_risk`，仅用于列表归类，不合并 bundle、时间线或评分状态
 - 客户版名称：阿曼外海油轮安全事件后的航运风险验证
 - 权威触发源：`UKMTO Warning 062-26`
 - 后验汇总源：`JMIC Update 050`、`JMIC Update 058`
@@ -56,6 +64,8 @@
 
 本计划分为两个 Gate，不得把内部可用误报为客户可用：
 
+在两个交付 Gate 之前还有共享前置门禁 `PROTOTYPE_APPROVED`：用户/产品责任人必须实际打开 `devdoc/DYINT场景2双专题交互Mock.html`，完成两个专题切换、时间回放、证据/任务、客户视图和“复用边界”走查，并明确给出 `approved`。当前状态为 `DRAFT_REVIEW_REQUIRED`。该 Gate 只确认信息架构和交互预期，不把 Mock 中示意地图、分数或文案当作数据事实。
+
 | Gate | 完成条件 | 允许用途 |
 | --- | --- | --- |
 | `INTERNAL_READY` | 数据包可重复构建；`gintbroker` 本地专题可打开、聚焦、回放和查看证据；不确定性、样例数据和未授权素材均有明确标签；6 张真实系统截图可走查 | 内部评审、产品/数据/售前彩排 |
@@ -65,7 +75,13 @@
 
 ### 1.3 可交付成果
 
-计划执行后应形成以下仓库内产物：
+共享预实现设计产物固定为：
+
+```text
+devdoc/DYINT场景2双专题交互Mock.html
+```
+
+该文件是自包含、无外部网络请求的评审 Mock，保留在 `dy-inta`，不复制到 `gintbroker`，也不作为运行时依赖。计划执行后还应形成以下仓库内产物：
 
 ```text
 demo_packages/sc2_20260526_muscat_tanker_attack/
@@ -111,10 +127,19 @@ demo_packages/sc2_20260526_muscat_tanker_attack/
     output_checksums.sha256
     internal_screenshots/
 
+tools/dyint_demo_common/
+  README.md
+  io_utils.py
+  schemas.py
+  manifest.py
+  telemetry.py
+  quality.py
+  validate_package.py
+  export_topic.py
+
 tools/sc2_20260526/
   README.md
   constants.py
-  io_utils.py
   build_manifest.py
   build_aoi.py
   build_events.py
@@ -124,6 +149,12 @@ tools/sc2_20260526/
   export_gintbroker_topic.py
   validate_package.py
 
+tests/dyint_demo_common/
+  test_schema.py
+  test_temporal_gate.py
+  test_telemetry_dedupe.py
+  test_customer_gate.py
+
 tests/sc2_20260526/
   test_manifest.py
   test_temporal_integrity.py
@@ -131,6 +162,8 @@ tests/sc2_20260526/
   test_referential_integrity.py
   test_customer_gate.py
 ```
+
+`tools/sc2_20260526/build_ais.py`、`build_adsb.py`、`validate_package.py` 和 `export_gintbroker_topic.py` 只能是场景配置/编排薄层，必须调用 `tools/dyint_demo_common/`；不得复制分块读取、复合去重、schema、授权、脱敏或 bundle 导出实现。6 月计划使用同一 common 包。
 
 `gintbroker` 需新增或修改的发布快照与代码：
 
@@ -173,6 +206,7 @@ tests/sc2_20260526/
 - 不扩展到 2 月基线、4 月过渡或 6 月风险窗口的全量数据包；它们继续由相邻方案管理。
 - 不把 DYINT 历史回放混入 `gintbroker` 的全局 Time Machine 快照存储；专题回放使用只读 bundle 和内存状态，不额外生成按小时快照。
 - 不在本计划内改 `doops-dev`、`moye-v4-product`、Jenkins 配置或远端 `.env`。
+- 不把 HTML Mock 发布到 `gintbroker`、CI 或客户环境，也不让真实系统运行时读取 Mock 中的示意数据。
 
 ---
 
@@ -228,7 +262,32 @@ tests/sc2_20260526/
 7. 5 月 28 日新闻主张发生在主事件之后，只能展示信息冲突和证据降级。
 8. 当前人工统计值是复现基线，不是最终真值；去重、时间清洗后如变化，必须同时保留原始口径和清洗口径解释。
 
-### 2.4 材料缺口和 Gate
+### 2.4 双专题边界与两层共享基础
+
+两个 Demo 固定为两个独立军事专题，不采用“一个 DYINT 专题内再切 5 月/6 月子页面”的结构：
+
+| 契约 | 5 月专题 | 6 月专题 | 是否共享 |
+| --- | --- | --- | --- |
+| `topic_id` | `dyint_sc2_20260526` | `dyint_sc2_20260610_12` | 否 |
+| `topic_kind` | `event_case` | `risk_window` | 否 |
+| bundle / timeline / release hash | 独立 | 独立 | 否 |
+| 证据、评分、任务和主持叙事 | 单事件闭环 | 区域风险窗口 | 否 |
+| `topic_group` | `dyint_sc2_maritime_risk` | `dyint_sc2_maritime_risk` | 仅列表归类 |
+| manifest、时间门禁、遥测分块读取、复合去重、质量码、脱敏、exporter | 同一 `tools/dyint_demo_common/` | 同一 `tools/dyint_demo_common/` | 是，只建一次 |
+| TopicBundle schema、API、MapLibre source/layer、详情、回放、audience Gate | 同一通用实现 | 同一通用实现 | 是，只建一次 |
+
+前端状态契约：`selectedTopicId` 同一时刻至多一个，驱动右侧详情和专题回放；`activeTopicIds` 可以启用多个地图叠加，但默认只启用并选择当前专题。两个专题同时启用时必须用 topic 颜色/图例区分，详情和时间游标仍只属于 `selectedTopicId`，禁止把两条时间线或分数相加。
+
+T0 必须分别判定：
+
+- `DATA_FOUNDATION_MODE=bootstrap|reuse|resume|BLOCKED_CONFIRM`：探测 `tools/dyint_demo_common/`、公共测试和最近验证记录。
+- `TOPIC_FOUNDATION_MODE=bootstrap|reuse|resume|BLOCKED_CONFIRM`：探测 `gintbroker` 的 `schema.py`、`/bundle`、`/timeline`、`useTopicBundle.ts`、`TopicDetailPanel.tsx`、`TopicReplayPanel.tsx` 和 HIMARS 兼容测试。
+
+两种 mode 的共同规则：全部缺失才 `bootstrap`；全部存在且测试通过为 `reuse`；部分存在且能对应本计划/6 月计划的执行记录为 `resume`；部分存在但来源不明时 `BLOCKED_CONFIRM`。第一个执行的专题可以建设 common/foundation，第二个专题只能复用或从明确断点续建。若基础只存在于另一个未合并分支，不自动 cherry-pick、复制文件或维护平行版本。
+
+共享 HTML Mock 的 Gate 另行记录为 `PROTOTYPE_GATE=DRAFT_REVIEW_REQUIRED|APPROVED|REVISE`。只有 `APPROVED` 且文件 SHA-256 与评审版本一致，才允许进入 T1。
+
+### 2.5 材料缺口和 Gate
 
 | 缺口 | 是否阻断 `INTERNAL_READY` | 是否阻断 `CUSTOMER_READY` | 处理方式 |
 | --- | --- | --- | --- |
@@ -239,6 +298,8 @@ tests/sc2_20260526/
 | SAR/光学影像和天气海况缺失 | 否 | 否，前提是明确展示为二次确认任务而非已有证据 | 不生成伪影像，不把任务占位当事实 |
 | 商业 AIS/船舶登记源缺失 | 否 | 否，前提是客户版不展示具体身份 | 列为 P1，不阻塞匿名版 |
 | `gintbroker` 通用专题渲染未完成 | 是 | 是 | T8-T10 先用 HIMARS 做兼容回归，再接 `dyint_sc2_20260526` |
+| 双专题 HTML Mock 尚未确认 | 是，阻断 T1 及后续实现 | 是 | T0.5 走查同一 Mock 的两个专题、共用/独有边界和客户降级状态；明确 `approved` 后记录 hash |
+| `dy-inta` 公共数据工程基础未落地 | 是 | 是 | T0/T1/T2 按 `DATA_FOUNDATION_MODE` 只补建一次 common scanner/validator/exporter；6 月计划复用 |
 | `gintbroker` 现网专题情报为空 | 否 | 否 | DYINT bundle 使用冻结证据表供演示，不依赖 live matcher 恰好命中；同时保留实时源为空的质量说明 |
 | CI 环境当前 AIS 未配置、总体 health 可能为 error | 否 | 否 | 本专题使用内置脱敏发布快照；目标回归区分“专题能力通过”和“外部源降级” |
 
@@ -248,17 +309,19 @@ tests/sc2_20260526/
 
 ### 3.1 实现策略
 
-采用“源数据原地只读、外部磁盘分块派生、仓库内小型发布快照、`gintbroker` 通用专题展示”的方案：
+采用“先评审双专题 HTML Mock、源数据原地只读、外部磁盘分块派生、仓库内小型发布快照、`gintbroker` 通用专题展示”的方案：
 
-1. 源数据只读，先生成文件清单、大小、修改时间和 SHA-256。
-2. 公共事件、授权状态、AOI、遥测派生和融合结果分层落表，禁止一张 CSV 混合所有语义。
-3. AIS/ADS-B 仅处理 5 月 20-28 日和三个粗 AOI；用分块读取控制资源，不扫描完整 2-6 月数据。
-4. 同时输出 `raw_compatible` 与 `deduped` 统计，解释清洗对结果的影响。
-5. 所有评分先过时间可见性检查；不能证明的“前兆”不强行制造上升曲线。
-6. 客户资产仅消费 `display_allowed=true` 且已脱敏的数据；内部样例和原始标识不进入浏览器数据文件。
-7. 从 `dy-inta` 生成单一 `gintbroker` release bundle，大小上限 5MB；bundle 只含 AOI/事件/匿名摘要/证据/时间线/任务和 manifest，不含原始轨迹。
-8. `gintbroker` 新增通用 topic bundle API 和通用地图/详情/回放组件；HIMARS 旧接口和旧 slow 字段保持兼容。
-9. 6 张验收截图来自真实 `gintbroker` 页面，不再维护一套独立 HTML storyboard。
+1. 先通过 T0.5 的双专题原型 Gate，冻结“两个独立专题、一套共享底座”的信息架构；未通过时不创建实现分支内容。
+2. 源数据只读，先生成文件清单、大小、修改时间和 SHA-256。
+3. 公共事件、授权状态、AOI、遥测派生和融合结果分层落表，禁止一张 CSV 混合所有语义。
+4. `tools/dyint_demo_common/` 只建设一次 manifest、schema、分块 scanner、复合去重、质量码、validator 和 exporter；本专题脚本只提供日期、AOI、规则和字段配置。
+5. AIS/ADS-B 仅处理 5 月 20-28 日和三个粗 AOI；用分块读取控制资源，不扫描完整 2-6 月数据。
+6. 同时输出 `raw_compatible` 与 `deduped` 统计，解释清洗对结果的影响。
+7. 所有评分先过时间可见性检查；不能证明的“前兆”不强行制造上升曲线。
+8. 客户资产仅消费 `display_allowed=true` 且已脱敏的数据；内部样例和原始标识不进入浏览器数据文件。
+9. 从 `dy-inta` 生成本专题独立 `gintbroker` release bundle，大小上限 5MB；bundle 只含 AOI/事件/匿名摘要/证据/时间线/任务和 manifest，不含原始轨迹。
+10. `gintbroker` 通用 topic bundle API 和通用地图/详情/回放组件只建设一次；HIMARS 旧接口和旧 slow 字段保持兼容。
+11. HTML Mock 留在 `dy-inta` 作为设计契约；最终 6 张验收截图必须来自真实 `gintbroker`，Mock 不是第二套运行前端。
 
 ### 3.2 运行参数和路径约定
 
@@ -276,6 +339,8 @@ export RAW_SOURCE_CACHE_ROOT="$DYINT_SCRATCH_ROOT/raw_sources"
 export QUARANTINE_ROOT="$DYINT_SCRATCH_ROOT/quarantine"
 export PREVIOUS_BUILD_ROOT="$DYINT_SCRATCH_ROOT/previous_build"
 export GINTBROKER_ROOT=/Users/liushen/Documents/cursorDevs/gintbroker
+export PROTOTYPE_FILE=/Users/liushen/Documents/githubDevs/dy-inta/devdoc/DYINT场景2双专题交互Mock.html
+export COMMON_TOOLS_ROOT=/Users/liushen/Documents/githubDevs/dy-inta/tools/dyint_demo_common
 ```
 
 每个新 shell 在执行阶段命令前都必须先执行上述变量块。`DYINT_SCRATCH_ROOT` 必须位于外部磁盘或用户指定的非仓库大容量路径；外部磁盘不可用时停止为 `BLOCKED_CONFIRM`，不得静默回退到项目 `.work/`、系统盘或复制原始文件。若 bundled Python 路径不存在，同样停止，不要未经验证切换到系统 Python 3.9。P0 只使用 Python 标准库、`pandas` 和 `openpyxl`，不在数据派生阶段引入 DuckDB、PyArrow、GeoPandas 或远端服务。
@@ -326,7 +391,9 @@ AIS：
 
 - 主时间字段：`IR_LASTTIME`。
 - `IR_LASTTIME` 为空但 `IR_LOADTIME` 可用时，只允许做覆盖质量统计，`time_basis=load_time_fallback`，不得进入事前行为评分。
-- 主去重键：非空 `IR_HKEY`；若缺失，候选键为 `IR_MMSI + IR_LASTTIME + IR_LAT + IR_LON + IR_SPEED`。
+- `IR_HKEY` 已确认不是唯一行 ID，只保留为源字段摘要和质量分析输入，禁止作为唯一去重键。
+- 复合去重键固定为 `IR_MMSI + COALESCE(IR_POSITION_RECEIVED, IR_LASTTIME) + IR_LAT + IR_LON + IR_SPEED + IR_COURSE`，与 6 月专题和数据盘点文档保持一致；字段先做去 BOM、trim、UTC 时间解析和数值规范化，再计算不可逆稳定 hash。
+- `IR_MMSI`、位置时间、经纬度任一关键分量缺失时标记 `DEDUPE_KEY_INCOMPLETE`，该行保留在 raw 与 deduped 口径中，不与其他不完整行折叠，避免误删。
 - 经纬度必须满足 `-90 <= lat <= 90`、`-180 <= lon <= 180`。
 - 负速度、非数值速度不纠正为绝对值，改为空并打质量码。
 - `IR_MMSI`、`IR_IMO`、船名只留在内部工作区；客户输出使用稳定匿名 ID。
@@ -334,7 +401,7 @@ AIS：
 ADS-B：
 
 - 主时间字段：`source_date`；不得因为 `IR_LASTTIME` 为空而丢弃整日数据。
-- 主去重键：非空 `id`；若重复或缺失，候选键为 `icao + source_date + lat + lon + alt + spd`。
+- `id` 只有在日内唯一且跨 9 个目标日文件无冲突时才可作为去重键；否则使用 `icao + source_date + lat + lon + alt + spd + trak`。关键分量不完整时与 AIS 一样标记 `DEDUPE_KEY_INCOMPLETE` 并保留，不误合并。
 - 忽略 `._*.csv`。
 - `icao`、`reg`、`call`、`mil` 为空或未经核验时，不推断航空器身份、军事属性或行动意图。
 - 负速度和异常高度只进入质量统计，不直接触发高风险结论。
@@ -406,9 +473,14 @@ AIS 可追加 `low_speed_count`、`waiting_candidate_count`、`destination_categ
 | 表 | 必需字段 |
 | --- | --- |
 | `evidence_matrix.csv` | `evidence_id`、`event_id`、`evidence_type`、`observed_at`、`visible_at`、`source_ref`、`aoi_id`、`proposition`、`support_status`、`quality_note`、`display_allowed`、`customer_expression` |
-| `score_timeline.csv` | `event_id`、`timestamp`、`score`、`level`、`evidence_refs`、`visible_at_max`、`quality_notes`、`not_yet_known`、`customer_action` |
+| `score_timeline.csv` | `event_id`、`timestamp`、`score`、`risk_band`、`response_state`、`evidence_refs`、`visible_at_max`、`quality_notes`、`not_yet_known`、`customer_action` |
 
-`level` 枚举固定为 `background`、`elevated`、`event_response`、`monitoring`；若未来引入 `prepare_protective_action`，必须满足第 3.6 节的两类独立事前证据门槛并新增测试。禁止沿用客户敏感度更高的 `prepare_defense`。
+共享 schema 不再用一个 `level` 混合“风险程度”和“处置阶段”，固定拆成两个正交字段：
+
+- `risk_band`：`background`（0-29）、`elevated`（30-49）、`protective_readiness`（50-69）、`verify_now`（70-100）。5 月与 6 月专题共用同一枚举和阈值；进入 `protective_readiness` 仍必须满足第 3.6 节的证据门槛。
+- `response_state`：`observe`、`verify`、`event_response`、`monitoring`、`archive`。它描述当前工作流，不参与分数区间计算。
+
+5 月 26 日可以同时是 `risk_band=protective_readiness` 与 `response_state=event_response`；5 月 27 日可以保持相同风险档位但切换为 `response_state=monitoring`。禁止继续生成旧 `level=event_response|monitoring`，也禁止沿用客户敏感度更高的 `prepare_defense`。若为兼容已落地旧 bundle 临时读取 `level`，只能在 adapter 中映射并记录 deprecation，新的持久化产物和 API 响应以两个新字段为准。
 
 ### 3.8 `gintbroker` 专题 bundle 契约
 
@@ -418,6 +490,8 @@ AIS 可追加 `low_speed_count`、`waiting_candidate_count`、`destination_categ
 {
   "schema_version": "1.0",
   "topic_id": "dyint_sc2_20260526",
+  "topic_kind": "event_case",
+  "topic_group": "dyint_sc2_maritime_risk",
   "release_id": "<stable-release-id>",
   "source_package_sha256": "<dy-inta stable package hash>",
   "audience": "internal|customer",
@@ -441,6 +515,7 @@ AIS 可追加 `low_speed_count`、`waiting_candidate_count`、`destination_categ
 5. `telemetry_summary` 只表达日期/AOI/计数/质量，不包含原始 MMSI、IMO、ICAO、呼号或逐点轨迹。
 6. `source_package_sha256` 必须与 `dy-inta` 稳定输出一致；漂移检查失败时禁止提交 `gintbroker` 发布快照。
 7. `audience=customer` 时，bundle 生成器只导出 `display_allowed=true` 且通过脱敏的行；运行时 API 再做一次 fail-closed 校验。
+8. `score_timeline` 只允许 `risk_band` 与 `response_state` 两个正交字段；schema 和 TypeScript 类型不得为 5 月/6 月建立场景专用枚举分支。
 
 ### 3.9 `gintbroker` 兼容和交互契约
 
@@ -451,6 +526,7 @@ AIS 可追加 `low_speed_count`、`waiting_candidate_count`、`destination_categ
 - 保留现有 `/api/topics/{topic_id}`、`brief`、`entities`、`intel`。
 - 保留 `himars_entities`、`himars_intel`、`topic_briefs.himars` 和 `ActiveLayers.himars`，直到 HIMARS 兼容测试通过；本计划不一次性删除旧契约。
 - 前端新增 `selectedTopicId`、`activeTopicIds` 与 `useTopicBundle()`，专题开关不再依赖静态 `ActiveLayers` 键。
+- `selectedTopicId` 同一时刻至多一个，决定右侧详情和 `TopicReplayPanel`；`activeTopicIds` 只决定地图叠加。切换选中专题时不得合并两个 bundle、时间线、证据或评分。
 - 左侧“军事专题”点击 DYINT 后：启用专题、按 bbox/polygon 聚焦、加载 bundle。
 - 地图通用渲染：AOI 面、航运背景线、海事事件/通告点和匿名汇总点分别使用可解释样式；点击后返回 `selectedEntity.type=topic_feature` 与 `topic_id/feature_id`。
 - 右侧专题详情：专题摘要、证据支持/反驳/待确认、数据质量、二次确认任务和保护性报告，不把 DYINT 内容混入全局实时威胁列表。
@@ -479,6 +555,9 @@ AIS 可追加 `low_speed_count`、`waiting_candidate_count`、`destination_categ
 | 大文件处理耗尽资源 | 长任务中断 | 按 200,000 行分块，只读所需列，只处理 9 天 | 记录 elapsed/RSS/chunk 数 | 降低 chunk；从阶段断点重跑，不重复前序 commit |
 | 外部盘中途断开 | 结果不完整 | 构建前/后校验输入 hash 和文件大小；中间结果也在外部盘 | inventory 对账 | 标记 `BLOCKED_CONFIRM`，重新挂载后从当前阶段继续；不回退本机仓库 |
 | bundle 过大或夹带原始轨迹 | 磁盘、镜像和泄露风险 | 5MB 上限、字段白名单、ID/轨迹扫描 | `test_customer_gate.py` + 文件大小 Gate | 拒绝导出，回到聚合/脱敏阶段 |
+| HTML Mock 未确认就进入实现 | 页面做完后才暴露产品分歧 | T0.5 人工走查、记录 approved hash；T1 前硬阻断 | V00 原型状态/视口/交互矩阵 | 保持计划和 Mock 文档改动，不进入代码阶段 |
+| 两个专题重复建设数据工具 | scanner/schema/validator 分叉，修复需做两遍 | `DATA_FOUNDATION_MODE` + `tools/dyint_demo_common/` + 公共测试 | common 静态扫描和双场景 fixture | 统一到一套 common commit；来源不明则停止 |
+| 两个专题被实现成一个混合专题 | 时间线、评分和证据语义互相污染 | 独立 topic ID/bundle/release，`selectedTopicId` 与 `activeTopicIds` 分工 | 双专题切换与引用隔离测试 | 删除混合配置，恢复两个独立 bundle |
 | `gintbroker` 新专题入口只显示名称但不开图层 | Demo 断链 | `activeTopicIds` 与通用 bundle/map/detail/replay 契约 | HIMARS + DYINT 双专题浏览器矩阵 | 回退通用化 commit，保留 HIMARS 旧链路 |
 | HIMARS 兼容性回归 | 现有专题不可用 | 旧 API/slow 键/ActiveLayers 保留，先加后迁移 | 原有 topic/API/GeoJSON/build 测试 | `git revert` 对应 `gintbroker` 阶段 commit |
 | 专题回放污染全局 Time Machine | 存储增长、实时/历史语义混淆 | 独立 `TopicReplayPanel`、只读 bundle、内存状态 | Network 与磁盘写入检查 | 禁用 topic replay，保持全局 Time Machine 原行为 |
@@ -486,7 +565,7 @@ AIS 可追加 `low_speed_count`、`waiting_candidate_count`、`destination_categ
 | CI 环境 health error 掩盖专题结果 | 发布误判 | 区分专题 API/UI 验收与外部源降级；不把 AIS 未配置当本专题失败 | 目标环境验证矩阵 | 专题失败回滚镜像；外部源问题单独记录 |
 | 安全叙事越界 | 方案被理解为行动辅助 | 禁止词检查 + 人工售前复审 | 客户文案扫描与彩排 | 移除越界内容，重新评审，不带病演示 |
 
-T0-T11 只做本地数据派生、`dy-inta`/`gintbroker` 本地改动和验证；默认不 push。T12-T13 才涉及两仓分支 push、MR、Jenkins `Shadowbroker` 和 `192.168.211.195:3001` 目标环境。只有用户在执行轮明确要求“执行到发布/目标环境”时才可进入 T12-T13；MR 合并、Jenkins/远端配置修改和历史镜像回滚仍保留单独暂停确认点。本计划不修改 Jenkins 配置、远端 `.env`、数据库或 JIRA。
+T0/T0.5 只做只读盘点、foundation 探针和 HTML Mock 评审；`PROTOTYPE_GATE` 未批准时不得进入 T1。T1-T11 只做本地数据派生、`dy-inta`/`gintbroker` 本地改动和验证，默认不 push。T12-T13 才涉及两仓分支 push、MR、Jenkins `Shadowbroker` 和 `192.168.211.195:3001` 目标环境。只有用户在执行轮明确要求“执行到发布/目标环境”时才可进入 T12-T13；MR 合并、Jenkins/远端配置修改和历史镜像回滚仍保留单独暂停确认点。本计划不修改 Jenkins 配置、远端 `.env`、数据库或 JIRA。
 
 ---
 
@@ -498,11 +577,13 @@ T0-T11 只做本地数据派生、`dy-inta`/`gintbroker` 本地改动和验证�
 
 - 确认当前分支、工作区、upstream、未推送提交和输入可读性。
 - 创建执行记录，但不修改原始数据。
+- 判定 `DATA_FOUNDATION_MODE`、`TOPIC_FOUNDATION_MODE`，并记录当前 HTML Mock hash。
 - 判断从 T0 开始还是从已完成阶段继续。
 
 输入：
 
 - 本计划。
+- 6 月实施计划和 `devdoc/DYINT场景2双专题交互Mock.html`。
 - 源文档及第 2.2 节列出的本地输入。
 
 修改范围：
@@ -519,7 +600,9 @@ T0-T11 只做本地数据派生、`dy-inta`/`gintbroker` 本地改动和验证�
 6. 在已确认的外部磁盘路径创建空的 `WORK_ROOT`、`RAW_SOURCE_CACHE_ROOT`、`QUARANTINE_ROOT` 和 `PREVIOUS_BUILD_ROOT`；不得写入、改名或移动任一原始文件。
 7. 用 `realpath` 确认上述目录均不在 `dy-inta` 或 `gintbroker` 仓库内；不创建项目 `.work/`。
 8. 记录输入文件大小、mtime、SHA-256；对 ADS-B 只记录 5 月 20-28 日 9 个有效文件，忽略 `._*`。
-9. 若执行记录已有阶段，验证对应 commit 仍在当前分支且工作区与记录一致；一致则从下一阶段继续，不重复生成已完成阶段。
+9. 对 `tools/dyint_demo_common/` 和公共测试执行数据 foundation 探针；对 `gintbroker` 的通用 bundle/API/前端组件和 HIMARS 测试执行 topic foundation 探针，按第 2.4 节分别判定 mode。
+10. 读取 HTML Mock 的 SHA-256、文件大小和 Git commit；只记录，不把 `DRAFT_REVIEW_REQUIRED` 自动升级为 `APPROVED`。
+11. 若执行记录已有阶段，验证对应 commit 仍在当前分支且工作区与记录一致；一致则从下一阶段继续，不重复生成已完成阶段。
 
 验证：
 
@@ -538,6 +621,16 @@ df -h . /Volumes/exFAT466
 mkdir -p "$WORK_ROOT" "$RAW_SOURCE_CACHE_ROOT" "$QUARANTINE_ROOT" "$PREVIOUS_BUILD_ROOT"
 test "$(realpath "$DYINT_SCRATCH_ROOT")" != "$(realpath .)"
 case "$(realpath "$DYINT_SCRATCH_ROOT")" in "$(realpath .)"/*|"$(realpath "$GINTBROKER_ROOT")"/*) exit 1;; esac
+shasum -a 256 "$PROTOTYPE_FILE"
+for path in \
+  tools/dyint_demo_common/validate_package.py \
+  "$GINTBROKER_ROOT/backend/services/topics/schema.py" \
+  "$GINTBROKER_ROOT/frontend/src/hooks/useTopicBundle.ts" \
+  "$GINTBROKER_ROOT/frontend/src/components/TopicDetailPanel.tsx" \
+  "$GINTBROKER_ROOT/frontend/src/components/TopicReplayPanel.tsx"; do
+  test -e "$path" && echo "PRESENT $path" || echo "MISSING $path"
+done
+rg -n '/bundle|/timeline' "$GINTBROKER_ROOT/backend/routers/topics.py" || true
 ```
 
 预期结果：
@@ -547,6 +640,7 @@ case "$(realpath "$DYINT_SCRATCH_ROOT")" in "$(realpath .)"/*|"$(realpath "$GINT
 - AIS 1 个文件和 ADS-B 9 个日文件可读。
 - 没有把 `._*.csv` 算作有效输入。
 - scratch、原始源缓存和隔离目录均位于外部磁盘，不在项目目录。
+- 两个 foundation mode 有唯一可解释值；Mock hash 已记录但审批状态未被自动推断。
 
 暂停条件：
 
@@ -554,11 +648,68 @@ case "$(realpath "$DYINT_SCRATCH_ROOT")" in "$(realpath .)"/*|"$(realpath "$GINT
 - 任一仓库当前分支、upstream 或 ahead/behind 与执行记录冲突。
 - 外部盘未挂载、输入文件缺失或 hash 在同一阶段内变化。
 - 空间不足或 Python 依赖缺失。
+- 任一 foundation 是来源不明的部分实现，或只存在于未合并分支且无法确认基线。
 
 提交与记录：
 
 - T0 只创建外部空工作目录和 Git 分支元数据，不修改原始文件；默认不提交。
 - 更新执行记录中的输入 hash 摘要、分支、起点 commit 和下一阶段。
+
+### T0.5：双专题 HTML Mock 评审 Gate
+
+目标：
+
+- 在任何数据脚本或 `gintbroker` 实现前确认两个独立专题的预期效果。
+- 冻结共享外壳与专题独有内容，避免后续以代码猜产品交互。
+
+输入：
+
+- `devdoc/DYINT场景2双专题交互Mock.html`。
+- 5 月与 6 月两份实施计划。
+- T0 记录的 Mock SHA-256。
+
+修改范围：
+
+- 评审提出修改时，只允许更新 Mock 和两份计划的交互/验收契约。
+- 不创建 `demo_packages/`、`tools/` 或 `gintbroker` 业务改动。
+
+步骤：
+
+1. 从仓库启动静态服务，不使用 `file://` 特例，也不加载外部接口：`$PYTHON -m http.server 4173 --directory .`。
+2. 在 1711x819 和 1440x900 打开 `/devdoc/DYINT场景2双专题交互Mock.html`；移动端 390x844 做 smoke。
+3. 切换专题 01/02，确认 topic ID、专题类型、标题、地图范围、时间节点、右侧判断、证据、任务整体切换，不是同一专题的两个 tab。
+4. 打开“复用边界”，确认 common data foundation 与 `gintbroker` shared core 只建设一次；场景 bundle、规则、时间线和验收叙事独立。
+5. 操作时间游标和播放：5 月 22-28 日只展示当时可见证据；切到 6 月后验证 6 月 14/21/23 后验信息在早期游标不可见。
+6. 切换内部/客户视图，确认未审批 AOI、许可和质量缺口有显式阻断/降级；不把 Mock 示意数据误认为事实。
+7. 检查图层开关、地图点选、右侧三个 tab、移动侧栏、键盘 `1/2` 和 Console；页面不得发出外部网络请求。
+8. 收集用户/产品责任人结论：`APPROVED`、`REVISE` 或未决。只有明确 `APPROVED` 才把 `PROTOTYPE_GATE`、Mock hash、评审人和时间写入两份计划执行记录。
+
+验证：
+
+```bash
+$PYTHON -m http.server 4173 --directory .
+curl -fsS http://127.0.0.1:4173/devdoc/DYINT场景2双专题交互Mock.html \
+  | rg 'dyint_sc2_20260526|dyint_sc2_20260610_12|两个专题，不是一个专题的两页'
+shasum -a 256 devdoc/DYINT场景2双专题交互Mock.html
+```
+
+通过标准：
+
+- 桌面与移动主路径可操作，Console 0 个未处理 error，Network 只有本地 HTML document。
+- 两个独立专题和一套共享底座的边界可由非技术评审者复述。
+- 用户/产品责任人明确给出 `APPROVED`，且审批 hash 与当前文件一致。
+
+暂停条件：
+
+- 评审结论为 `REVISE`、未明确批准，或审批后文件 hash 又变化。
+- 仍无法判断两个专题是否独立、右侧/时间线属于谁，或客户降级信息不清楚。
+- Mock 依赖外部网络、真实敏感数据或只有特定本机路径才能打开。
+
+提交与记录：
+
+- 需要修订时按纯文档规则本地提交：`docs(sc2): 调整双专题交互Mock与实现契约`。
+- 批准但文件无变化时不造空 commit，只在两份计划执行记录写 `PROTOTYPE_GATE=APPROVED`、hash、评审人和时间。
+- 未批准时状态为 `BLOCKED_CONFIRM`，不得进入 T1。
 
 ### T1：冻结数据包骨架、字段契约和来源清单
 
@@ -569,6 +720,7 @@ case "$(realpath "$DYINT_SCRATCH_ROOT")" in "$(realpath .)"/*|"$(realpath "$GINT
 
 输入：
 
+- T0.5 已批准的 Mock hash 和交互边界；未批准时本阶段不得开始。
 - T0 输入盘点和文件 hash。
 - 源文档中的公开来源 URL、事件定义和客户边界。
 - 相邻方案的 manifest、时间字段和客户门禁契约。
@@ -577,19 +729,21 @@ case "$(realpath "$DYINT_SCRATCH_ROOT")" in "$(realpath .)"/*|"$(realpath "$GINT
 
 - `demo_packages/sc2_20260526_muscat_tanker_attack/README.md`
 - `00_manifest/*`
+- `tools/dyint_demo_common/{README.md,io_utils.py,schemas.py,manifest.py}` 与对应公共测试（仅 `DATA_FOUNDATION_MODE=bootstrap|resume`）
 - `tools/sc2_20260526/README.md`
 - 必要时 `.gitignore`
 
 步骤：
 
-1. 创建第 1.3 节目录骨架，只提交允许进仓库的空模板和说明，不提交原始文件。
-2. `target_definition.csv` 冻结事件 ID、时间窗、粗 AOI、客户名称、内部名称、被保护对象、允许/禁止结论和版本。
-3. `source_manifest.csv` 最低字段：`source_id`、`source_type`、`source_owner`、`source_url_or_path_template`、`retrieved_at`、`sha256`、`event_time`、`visible_at`、`known_after_time`、`time_precision`、`license`、`display_allowed`、`screenshot_allowed`、`quality_note`。
-4. 将源文档列出的 UKMTO/JMIC URL 重新获取到 `RAW_SOURCE_CACHE_ROOT`；记录 HTTP 状态、最终 URL、获取时间、文件 hash 和原文标题。原始 PDF 不进入仓库。
-5. 人工核对 `Warning 062-26` 是否明确提供事件时间、位置精度、船型、安全状态和环境影响；只把原文明确内容写入表。
-6. JMIC、gCaptain 和 5 月 28 日媒体按 `official_maritime`、`maritime_summary`、`media_enrichment`、`single_party_claim` 分类。
-7. 无法证明最早公开时间时，`visible_at` 留空并说明；不得用当前下载时间回填历史可见时间。
-8. `data_manifest.csv` 所有素材默认 `display_allowed=false`、`screenshot_allowed=false`，只有明确许可后逐项升级。
+1. 按 `DATA_FOUNDATION_MODE` 处理 manifest 基础：`bootstrap` 建通用 IO/schema/manifest；`reuse` 先跑公共测试并只加 5 月 profile；`resume` 从已记录 common commit 继续。场景 `build_manifest.py` 只能做配置/编排薄层。
+2. 创建第 1.3 节目录骨架，只提交允许进仓库的空模板和说明，不提交原始文件。
+3. `target_definition.csv` 冻结事件 ID、topic ID/kind/group、时间窗、粗 AOI、客户名称、内部名称、被保护对象、允许/禁止结论和版本。
+4. `source_manifest.csv` 最低字段：`source_id`、`source_type`、`source_owner`、`source_url_or_path_template`、`retrieved_at`、`sha256`、`event_time`、`visible_at`、`known_after_time`、`time_precision`、`license`、`display_allowed`、`screenshot_allowed`、`quality_note`。
+5. 将源文档列出的 UKMTO/JMIC URL 重新获取到 `RAW_SOURCE_CACHE_ROOT`；记录 HTTP 状态、最终 URL、获取时间、文件 hash 和原文标题。原始 PDF 不进入仓库。
+6. 人工核对 `Warning 062-26` 是否明确提供事件时间、位置精度、船型、安全状态和环境影响；只把原文明确内容写入表。
+7. JMIC、gCaptain 和 5 月 28 日媒体按 `official_maritime`、`maritime_summary`、`media_enrichment`、`single_party_claim` 分类。
+8. 无法证明最早公开时间时，`visible_at` 留空并说明；不得用当前下载时间回填历史可见时间。
+9. `data_manifest.csv` 所有素材默认 `display_allowed=false`、`screenshot_allowed=false`，只有明确许可后逐项升级。
 
 验证：
 
@@ -633,7 +787,7 @@ git diff --check
 
 修改范围：
 
-- `tools/sc2_20260526/io_utils.py`
+- `tools/dyint_demo_common/*` 和 `tests/dyint_demo_common/*`（仅 `DATA_FOUNDATION_MODE=bootstrap|resume` 时）
 - `tools/sc2_20260526/validate_package.py`
 - `tests/sc2_20260526/test_*.py`
 - `06_validation/validation_report.md` 模板
@@ -641,19 +795,22 @@ git diff --check
 步骤：
 
 1. 使用 Python 标准库 `unittest`，不新增 pytest 依赖。
-2. 为每个 CSV 固定必需列、枚举值、日期格式、空值规则和主键唯一性。
-3. 实现跨表引用校验：`source_ref`、`evidence_ref`、`aoi_id`、`asset_id` 必须能回到对应主表。
-4. 实现 temporal gate：参与某一评分点的证据必须满足 `visible_at <= scoring_time`；空 `visible_at` 不得参与。
-5. 实现 customer gate：客户资产只能引用 `display_allowed=true`；截图只能引用 `screenshot_allowed=true`；`rough_bbox` 不得在客户模式伪装成批准 AOI。
-6. 实现客户字段白名单：客户 bundle、截图清单和报告不得包含 MMSI、IMO、ICAO、呼号、未核验船名、原始绝对路径。
-7. 实现安全文案检查，重点审查“推荐打击”“精确坐标”“武器发射点”“攻击路线”“拦截并反制”“目标优先级”等行动性表达；事件事实中的“攻击/外部爆炸”可存在，但不能转成行动建议。
-8. 测试先使用最小 fixture，不读取 370MB 原始文件。
+2. `bootstrap` 时在 `tools/dyint_demo_common/` 实现通用 schema、时间、引用、授权、脱敏和遥测质量校验；`reuse` 时先运行公共测试，只新增 5 月 profile/fixture；`resume` 时从已记录 common commit 继续。场景 `validate_package.py` 只能装载 profile 并调用 common validator。
+3. 为每个 CSV 固定必需列、枚举值、日期格式、空值规则和主键唯一性。
+4. 实现跨表引用校验：`source_ref`、`evidence_ref`、`aoi_id`、`asset_id` 必须能回到对应主表。
+5. 实现 temporal gate：参与某一评分点的证据必须满足 `visible_at <= scoring_time`；空 `visible_at` 不得参与。
+6. 实现 `risk_band` 与 `response_state` schema，拒绝旧 `level=event_response|monitoring` 新写入，并用公共 fixture 同时覆盖 5 月/6 月 profile。
+7. 实现 customer gate：客户资产只能引用 `display_allowed=true`；截图只能引用 `screenshot_allowed=true`；`rough_bbox` 不得在客户模式伪装成批准 AOI。
+8. 实现客户字段白名单：客户 bundle、截图清单和报告不得包含 MMSI、IMO、ICAO、呼号、未核验船名、原始绝对路径。
+9. 实现安全文案检查，重点审查“推荐打击”“精确坐标”“武器发射点”“攻击路线”“拦截并反制”“目标优先级”等行动性表达；事件事实中的“攻击/外部爆炸”可存在，但不能转成行动建议。
+10. 测试先使用最小 fixture，不读取 370MB 原始文件。
 
 验证：
 
 ```bash
 PYTHON=/Users/liushen/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3
 $PYTHON -m unittest discover -s tests/sc2_20260526 -p 'test_*.py' -v
+$PYTHON -m unittest discover -s tests/dyint_demo_common -p 'test_*.py' -v
 $PYTHON tools/sc2_20260526/validate_package.py \
   --package demo_packages/sc2_20260526_muscat_tanker_attack \
   --mode internal
@@ -806,10 +963,10 @@ $PYTHON tools/sc2_20260526/validate_package.py --package "$OUTPUT_ROOT" --mode i
 
 步骤：
 
-1. 使用 `pandas.read_csv(..., chunksize=200_000, usecols=[...])`，编码先尝试 `utf-8-sig`；禁止整表载入。
-2. 只读取 `IR_LASTTIME`、`IR_LOADTIME`、`IR_NAME`、`IR_DESTINATION`、`IR_SPEED`、`IR_NAVIGATION_STATUS`、`IR_IMO`、`IR_MMSI`、`IR_LAT`、`IR_LON`、`IR_HKEY`、`SOURCE`。
+1. 场景脚本调用 `tools/dyint_demo_common/telemetry.py` 的 AIS 分块 scanner，使用 `pandas.read_csv(..., chunksize=200_000, usecols=[...])`，编码先尝试 `utf-8-sig`；禁止复制 scanner 或整表载入。
+2. 只读取 `IR_LASTTIME`、`IR_LOADTIME`、`IR_POSITION_RECEIVED`、`IR_NAME`、`IR_DESTINATION`、`IR_COURSE`、`IR_SPEED`、`IR_NAVIGATION_STATUS`、`IR_IMO`、`IR_MMSI`、`IR_LAT`、`IR_LON`、`IR_HKEY`、`SOURCE`。
 3. 先生成 `raw_compatible` 统计，严格按有效 `IR_LASTTIME` 日期和 bbox 过滤，复现源文档计数。
-4. 再按第 3.5 节生成 `deduped` 统计；不得用去重后的值覆盖原始口径。
+4. 再按第 3.5 节复合键生成 `deduped` 统计；`IR_HKEY` 不参与唯一去重，不得用去重后的值覆盖原始口径。
 5. 统计每个日期/AOI 的行数、唯一 MMSI 数、缺失身份数、缺失/越界坐标数、负速度数、去重删除数、低速/等待候选数和时间回退数。
 6. `nearby_vessel_candidates.csv` 只保留匿名 ID、日期、AOI、速度区间、导航状态类别、目的港类别、质量说明；不得提交原始 MMSI/IMO/船名/精确轨迹。
 7. 内部原始 ID 到匿名 ID 的映射只写 `QUARANTINE_ROOT`，不得提交或复制到项目目录。
@@ -833,6 +990,7 @@ $PYTHON tools/sc2_20260526/validate_package.py --package "$OUTPUT_ROOT" --mode i
 
 - `raw_compatible` 应与上表一致；不一致时先检查 BOM、时间解析、边界包含规则和坐标列，不得直接改期望值。
 - `deduped` 可以不同，但必须在 `source_count_reconciliation.csv` 说明差值、去重键和质量码。
+- `DEDUPE_KEY_INCOMPLETE` 行不互相折叠；报告必须单列数量，禁止为降低重复率而误删。
 - 如果原始文件 hash 与计划编写时不同，上表只作历史参考，不强行通过。
 
 验证：
@@ -884,9 +1042,9 @@ $PYTHON tools/sc2_20260526/validate_package.py --package "$OUTPUT_ROOT" --mode i
 
 步骤：
 
-1. 只枚举 `system_event_trajectory1_YYYYMMDD.csv`，显式排除 `._*`。
-2. 使用 `source_date` 作为主时间；读取 `id`、`icao`、`reg`、`type`、`spd`、`alt`、`lon`、`lat`、`call`、`mil`、`source_date`、`IR_LASTTIME`、`IR_LOADTIME`。
-3. 分别输出 `raw_compatible` 和 `deduped` 口径。
+1. 场景脚本调用 `tools/dyint_demo_common/telemetry.py` 的 ADS-B scanner，只枚举 `system_event_trajectory1_YYYYMMDD.csv`，显式排除 `._*`。
+2. 使用 `source_date` 作为主时间；读取 `id`、`icao`、`reg`、`type`、`spd`、`alt`、`trak`、`lon`、`lat`、`call`、`mil`、`source_date`、`IR_LASTTIME`、`IR_LOADTIME`。
+3. 先检查 `id` 日内/跨文件唯一性，再按第 3.5 节选择 ID 或复合键，分别输出 `raw_compatible` 和 `deduped` 口径。
 4. 按日期/AOI 统计行数、唯一 ICAO 数、身份缺失、负速度、异常高度、无效坐标、重复和时间字段缺失。
 5. 不输出航空器具体身份和军事属性；客户摘要只保留区域活动量与质量提示。
 6. 每日文件独立处理并写断点；单日失败不允许跳过后继续宣称全窗完成。
@@ -956,9 +1114,9 @@ $PYTHON tools/sc2_20260526/validate_package.py --package "$OUTPUT_ROOT" --mode i
 
 1. `evidence_matrix.csv` 每行包含 `evidence_id`、时间、类型、来源、支持命题、`support_status`、`quality_note`、客户表达、`visible_at`、`display_allowed`。
 2. `evidence_links.csv` 明确证据与事件、AOI、对象、结论的关系，不允许孤立 evidence ID。
-3. `score_timeline.csv` 同时输出 `score`、`level`、`evidence_refs`、`visible_at_max`、`quality_notes`、`not_yet_known`。
+3. `score_timeline.csv` 同时输出 `score`、`risk_band`、`response_state`、`evidence_refs`、`visible_at_max`、`quality_notes`、`not_yet_known`；风险档位与工作流状态必须分别计算和展示。
 4. 先执行 temporal gate，再计算分数；测试中要证明后验 JMIC 和 5 月 28 日主张无法进入 5 月 26 日前评分。
-5. 如果同 AOI 事前证据不足，按第 3.6 节保留背景/证据不足，5 月 26 日进入“事件响应与二次确认”，不要称为提前预测。
+5. 如果同 AOI 事前证据不足，按第 3.6 节保留背景/证据不足；5 月 26 日可进入 `risk_band=protective_readiness`、`response_state=event_response`，不要称为提前预测。
 6. `confirmation_tasks.csv` 至少包括目标船登记核验、正式 AOI、后续海事通告、天气海况、污染通告、影像任务和港口影响，每项有负责人角色、证据缺口、优先级、退出条件和客户可见状态。
 7. 保护性报告只引用客户 Gate 可用的证据；内部报告可以列未授权缺口但必须标注。
 
@@ -1014,7 +1172,7 @@ $PYTHON tools/sc2_20260526/validate_package.py --package "$OUTPUT_ROOT" --mode i
 
 步骤：
 
-1. 先在 `DYINT_SCRATCH_ROOT/export_candidate/` 生成 bundle，不直接写 `gintbroker`。
+1. 场景 exporter 只准备 5 月映射配置，并调用 `tools/dyint_demo_common/export_topic.py` 在 `DYINT_SCRATCH_ROOT/export_candidate/` 生成 bundle，不复制通用 audience/hash/schema/size 逻辑，也不直接写 `gintbroker`。
 2. 只导出 `display_allowed=true` 的字段；内部模式也不得导出原始 MMSI/IMO/ICAO、呼号、个人绝对路径和逐点轨迹。
 3. 生成 `source_package_sha256`、`release_id`、`audience`、文件清单和稳定 checksum。
 4. 检查 JSON 总大小不超过 5MB；超限时只保留日/AOI 聚合和代表性事件，不降低证据准确性。
@@ -1051,11 +1209,11 @@ fi
 - `gintbroker` 仅暂存 3 个数据/配置文件，本地提交：`feat(topics): 添加DYINT商船安全专题快照`。
 - 记录两个 commit 和 `source_package_sha256`；不 push。
 
-### T9：通用化 `gintbroker` 专题后端
+### T9：复用或补建 `gintbroker` 通用专题后端
 
 目标：
 
-- 让专题 API 能读取通用 bundle，而不是只对 HIMARS 暴露硬编码 slow 顶层键。
+- 按 `TOPIC_FOUNDATION_MODE` 复用、续建或只补建一次通用 bundle API，而不是只对 HIMARS 暴露硬编码 slow 顶层键。
 - 保持现有 HIMARS API 和 `/api/live-data/slow` 契约不变。
 
 输入：
@@ -1074,13 +1232,14 @@ fi
 
 步骤：
 
-1. 新增通用 bundle schema 校验：版本、topic ID、FeatureCollection、时间、枚举、引用、audience 和 5MB 上限。
-2. 在 service 中按 `topic_id` 读取 `backend/data/<topic_id>/bundle.json`，沿用 mtime cache；配置无 bundle 时继续走现有 HIMARS 组装路径。
-3. 新增 `GET /api/topics/{topic_id}/bundle` 与 `GET /api/topics/{topic_id}/timeline`。
-4. API 按部署 audience fail-closed 过滤 `display_allowed=false`；不向响应返回本地路径或内部 ID 映射。
-5. `/api/topics/{topic_id}/brief|entities|intel` 对 bundle 专题返回兼容投影；未知专题继续 404。
-6. 不新增 `dyint_*` slow 顶层字段；保留 `get_topics_slow_payload()` 对 HIMARS 的现有输出，防止旧前端回归。
-7. 补负例：topic ID 不一致、未来信息泄露、粗 AOI customer 误放行、路径泄露、bundle 超限、悬空 evidence ref。
+1. T9 开始前重新执行 topic foundation 探针；若 6 月计划或其他已确认分支的通用基础已经合入当前基线，切 `reuse`，不得重复实现。
+2. `bootstrap`：新增通用 bundle schema 校验、mtime cache、`GET /api/topics/{topic_id}/bundle|timeline` 和兼容投影；`reuse`：先跑现有测试，只补 5 月 profile/fixture；`resume`：核对已记录 foundation commit 后续建。
+3. schema 校验版本、topic ID/kind/group、FeatureCollection、`risk_band/response_state`、时间、引用、audience 和 5MB 上限；拒绝场景专用枚举。
+4. 在 service 中按 `topic_id` 读取 `backend/data/<topic_id>/bundle.json`；配置无 bundle 时继续走现有 HIMARS 组装路径。
+5. API 按部署 audience fail-closed 过滤 `display_allowed=false`；不向响应返回本地路径或内部 ID 映射。
+6. `/api/topics/{topic_id}/brief|entities|intel` 对 bundle 专题返回兼容投影；未知专题继续 404。
+7. 不新增 `dyint_*` slow 顶层字段；保留 `get_topics_slow_payload()` 对 HIMARS 的现有输出，防止旧前端回归。
+8. 补负例：topic ID 不一致、未来信息泄露、粗 AOI customer 误放行、路径泄露、bundle 超限、悬空 evidence ref、两个 topic 的 evidence/timeline 交叉引用。
 
 验证：
 
@@ -1111,10 +1270,10 @@ API 断言：
 
 提交与记录：
 
-- 验证通过后在 `gintbroker` 本地提交：`feat(topics): 通用化专题bundle与时间线接口`。
-- 记录测试数量、API 样本和 commit；不 push。
+- 有后端改动且验证通过后在 `gintbroker` 本地提交：`feat(topics): 通用化专题bundle与时间线接口`。
+- `reuse` 且无需改动时不造空 commit，只记录复用的 foundation commit、测试数量和 API 样本；不 push。
 
-### T10：通用化 `gintbroker` 专题前端并接入 DYINT 可视化
+### T10：复用或补建通用专题前端并接入 5 月可视化
 
 目标：
 
@@ -1124,6 +1283,7 @@ API 断言：
 输入：
 
 - T9 通用 bundle/timeline API。
+- T0.5 已批准的 HTML Mock hash；只作为信息架构/交互契约，不作为运行时数据源。
 - 用户截图 `/Users/liushen/iShots/iShot_2026-07-10_07.26.21.jpg`。
 - 现有 `WorldviewLeftPanel`、`MaplibreViewer`、`NewsFeed`、`TimelinePanel` 视觉和交互基线。
 
@@ -1144,16 +1304,18 @@ API 断言：
 
 步骤：
 
-1. 新增 `TopicBundle`、`TopicFeature`、`TopicTimelineItem`、`TopicEvidence`、`TopicTask` 类型。
-2. 新增 `useTopicBundle(topicId)`：只从自有 `/api/topics/{id}/bundle` 取数，具备 loading/error/retry/release ID 状态。
-3. `page.tsx` 新增 `selectedTopicId` 与 `activeTopicIds`；专题状态不再强行塞进静态 `ActiveLayers`。
-4. `WorldviewLeftPanel` 保留现有“军事本体/军事专题”Tab；专题列表仍来自 `/api/topics`，点击 DYINT 后启用、选择并按 bbox/polygon 聚焦。HIMARS 原开关行为保留。
-5. 新增通用 `buildTopicFeaturesGeoJSON()`，支持 Point/LineString/Polygon，按 `feature_kind`、`geometry_status`、`support_status`、`quality_level` 生成样式属性。
-6. `MaplibreViewer` 增加通用 topic source/layers：范围 fill/line、航运背景 line、事件/通告 symbol、匿名摘要 circle；点击回传 `topic_feature`。
-7. 新增 `TopicDetailPanel`，在右侧复用现有框架展示摘要、证据矩阵、质量提示、二次确认任务和保护性报告；不把 DYINT 条目硬塞进全局 `himarsIntel` 卡片。
-8. 新增 `TopicReplayPanel`，占用右下角时间机器视觉区域或以明确 topic mode 切换；回放 5 月 22-28 日 bundle 时间线，只更新 topic 图层/详情，不调用 snapshot 创建 API、不暂停全局实时数据。
-9. AOI 为 `rough_bbox` 时必须显示“粗筛选范围/非精确事件点”；空 ADS-B 日显示“无匹配/覆盖不足”，不能填假点。
-10. 增加中英文术语、键盘操作、颜色之外的状态标签和 loading/empty/error/blocked 状态。
+1. 重新探测 `TOPIC_FOUNDATION_MODE`。`bootstrap` 才新增通用类型、hook、source/layer、详情和回放；`reuse` 先跑既有测试，只扩展通用 feature/type/profile；`resume` 从明确 foundation commit 续建。
+2. 通用类型必须包含 `TopicBundle`、`TopicFeature`、`TopicTimelineItem`、`TopicEvidence`、`TopicTask`，并把 `risk_band`、`response_state` 分开；不得建立 May/June 专用 union。
+3. `useTopicBundle(topicId)` 只从自有 `/api/topics/{id}/bundle` 取数，具备 loading/error/retry/release ID 状态。
+4. `page.tsx` 使用 `selectedTopicId` 与 `activeTopicIds`；选中项决定详情/回放，启用集合只决定地图叠加，专题状态不强行塞进静态 `ActiveLayers`。
+5. `WorldviewLeftPanel` 保留现有“军事本体/军事专题”Tab；专题列表仍来自 `/api/topics`，点击 5 月专题后启用、选择并按 bbox/polygon 聚焦。HIMARS 原开关行为保留。
+6. 通用 `buildTopicFeaturesGeoJSON()` 支持 Point/LineString/Polygon，按 `feature_kind`、`geometry_status`、`support_status`、`quality_level` 生成样式属性。
+7. `MaplibreViewer` 使用同一 topic source/layers 渲染范围、航运背景、事件/通告和匿名摘要；点击回传 `topic_feature`，通用代码不得出现本专题 ID。
+8. `TopicDetailPanel` 在右侧复用现有框架展示摘要、证据矩阵、质量提示、二次确认任务和保护性报告；不把 DYINT 条目硬塞进全局 `himarsIntel` 卡片。
+9. `TopicReplayPanel` 占用右下角时间机器视觉区域或以明确 topic mode 切换；回放 5 月 22-28 日 bundle 时间线，只更新选中 topic 图层/详情，不调用 snapshot 创建 API、不暂停全局实时数据。
+10. 对照批准 Mock 验证专题选择、时间游标、证据/任务、客户降级和复用边界；视觉应融入 `gintbroker` 现有设计系统，不要求像素复刻 Mock。
+11. AOI 为 `rough_bbox` 时必须显示“粗筛选范围/非精确事件点”；空 ADS-B 日显示“无匹配/覆盖不足”，不能填假点。
+12. 增加中英文术语、键盘操作、颜色之外的状态标签和 loading/empty/error/blocked 状态。
 
 视口矩阵：
 
@@ -1174,6 +1336,7 @@ API 断言：
 - 来源支持/反驳/待确认同时存在。
 - API loading/error/empty。
 - 切回 HIMARS 后旧专题正常。
+- 若 6 月专题已安装，两个 DYINT 专题可互切，右侧和回放只消费当前 `selectedTopicId`。
 
 验证：
 
@@ -1192,6 +1355,11 @@ npm run lint -- \
   src/components/TopicDetailPanel.tsx \
   src/components/TopicReplayPanel.tsx
 npm run build
+
+if rg -n 'dyint_sc2_20260526|dyint_sc2_20260610_12' \
+  src/app src/components src/hooks src/types; then
+  exit 1
+fi
 ```
 
 暂停条件：
@@ -1200,6 +1368,7 @@ npm run build
 - 专题回放调用全局 snapshot 写接口或覆盖实时数据 store。
 - HIMARS 地图、详情、聚焦或 slow 数据回归。
 - UI 为了视觉张力隐藏证据质量、授权或位置精度。
+- 通用代码出现任一 DYINT topic ID，或切换 5 月/6 月时复用旧详情/时间游标状态。
 
 提交与记录：
 
@@ -1225,7 +1394,7 @@ npm run build
 - `dy-inta/demo_packages/.../06_validation/internal_screenshots/*`
 - customer Gate 通过后才允许写入 `dy-inta/demo_packages/.../05_customer_assets/screenshots/*`
 - `screen_manifest.csv`、主持稿、保护性报告和执行记录
-- 不再新增独立 HTML/CSS/JS 页面
+- 不新增第二套运行时 HTML/CSS/JS；已批准的 `devdoc/DYINT场景2双专题交互Mock.html` 只保留为设计契约
 
 步骤：
 
@@ -1234,11 +1403,12 @@ npm run build
 3. 比较两次稳定输出 SHA-256；排除 `retrieved_at`、日志和截图，业务 CSV/GeoJSON/bundle 必须一致。
 4. 运行 T2、T9、T10 全部定向测试、lint 和 build。
 5. 启动 `gintbroker` 本地标准环境，确认 API 与前端同源，不从浏览器直连外部原始文件。
-6. 用真实浏览器依次完成：进入军事专题、开启 DYINT、自动聚焦、时间回放、点击 AOI/摘要、查看证据/任务、切回 HIMARS。
+6. 用真实浏览器依次完成：进入军事专题、开启 5 月专题、自动聚焦、时间回放、点击 AOI/摘要、查看证据/任务、切回 HIMARS；若 6 月专题已安装，再验证两个 DYINT 专题互切且详情/回放状态不串线。
 7. 检查 Console、Network、页面内文和 bundle：无原始标识、个人路径、404、未处理 error 或第三方原始文件请求。
 8. 在 1920x1080、1711x819、1440x900 获取 6 张内部验收截图并写 `06_validation/internal_screenshots/`；每张不超过 2MB，总量不超过 12MB。customer Gate 通过后才复制对应最终截图到 `05_customer_assets/screenshots/`；过程截图和录屏只放外部工作区。移动视口只做 smoke。
-9. 由非技术同事或独立评审者完成一次 8-12 分钟彩排。
-10. 使用 `presales-demo-review` 做轻量复审，更新 `validation_report.md`。
+9. 对照 T0.5 批准 Mock 做交互一致性清单：专题独立性、共享外壳、选中/启用状态、时间门禁、证据/任务、客户降级均一致；允许按真实 `gintbroker` 设计系统调整视觉细节。
+10. 由非技术同事或独立评审者完成一次 8-12 分钟彩排。
+11. 使用 `presales-demo-review` 做轻量复审，更新 `validation_report.md`。
 
 验证：
 
@@ -1381,7 +1551,7 @@ curl -fsS http://192.168.211.195:3001/api/topics/himars/brief \
 
 输入：
 
-- T0-T13 执行记录、两仓 commit、自动验证、浏览器彩排、MR/Jenkins/目标环境证据。
+- T0-T13 执行记录、批准的 Mock hash、两种 foundation mode/commit、两仓 commit、自动验证、浏览器彩排、MR/Jenkins/目标环境证据。
 
 修改范围：
 
@@ -1391,9 +1561,9 @@ curl -fsS http://192.168.211.195:3001/api/topics/himars/brief \
 
 步骤：
 
-1. 核对每阶段状态、两仓 commit、`source_package_sha256`、release ID 和剩余 Gate。
+1. 核对每阶段状态、`PROTOTYPE_GATE`/Mock hash、两种 foundation mode/commit、两仓 commit、`source_package_sha256`、release ID 和剩余 Gate。
 2. 核对两个工作区无未知文件；原始数据、中间文件和 quarantine 均只在原路径/外部 scratch。
-3. 核对 HIMARS 兼容、DYINT 6 画面和专题回放均有验证证据。
+3. 核对只有一套 common/topic foundation，HIMARS 兼容、已安装 6 月专题互切、5 月 6 画面和专题回放均有验证证据。
 4. 未进入 T12/T13 时明确写“仅本地 `INTERNAL_READY`，未发布”；不得误写目标环境已完成。
 5. 输出最终状态：`INTERNAL_READY`、`CUSTOMER_READY` 或 `BLOCKED_CONFIRM`。
 
@@ -1422,6 +1592,7 @@ git diff --check
 
 | ID | 验证层 | 覆盖点 | 样本/命令 | 通过标准 | 失败处理 |
 | --- | --- | --- | --- | --- | --- |
+| V00 | 原型 Gate | 两个独立专题、共享底座、交互/视口/客户降级 | T0.5 HTML Mock 走查 + hash | 用户明确批准；1711x819、1440x900、390x844 主路径通过；0 外部请求/未处理 error | `BLOCKED_CONFIRM`，不得进入 T1 |
 | V01 | 输入盘点 | 文件存在、hash、日文件完整 | T0 inventory | AIS 1 个、ADS-B 9 个有效文件，hash 稳定 | `BLOCKED_CONFIRM`，不进入构建 |
 | V02 | Schema | CSV 必需列、类型、枚举、主键 | `unittest` | 全表 schema 通过 | 修契约或生成器，不手改结果绕过 |
 | V03 | 原始口径复现 | 源文档 AIS/ADS-B 计数 | T5/T6 reconciliation | hash 相同时原始口径一致 | 排查时间、BOM、边界、sidecar |
@@ -1442,6 +1613,7 @@ git diff --check
 | V18 | 确定性 | 两次构建稳定输出 hash | T11 checksums | 业务 CSV/GeoJSON/bundle 一致 | 定位非确定字段后重建 |
 | V19 | 目标环境 | Jenkins 镜像、API、6 画面、3 视口 | T13 目标环境回归 | release/hash 正确；DYINT 与 HIMARS 均通过 | 回滚历史镜像并记录失败 |
 | V20 | 演示闭环 | 8-12 分钟、非技术复述 | 内部彩排 | 能复述压力、动作、输出；每次升级可追溯 | 回到 T7/T10 |
+| V21 | 双层共享基础 | common scanner/validator/exporter 与 topic API/UI 均场景无关 | 两种 foundation probe + common 双场景 fixture + 静态扫描 | 只有一套公共实现；两个独立 topic 无交叉引用；通用代码无任一 DYINT topic ID | 统一 foundation 或 `BLOCKED_CONFIRM` |
 
 ### 6.1 验证样本选择
 
@@ -1475,7 +1647,9 @@ git diff --check
 | AIS/ADS-B | `SPEED_NEGATIVE` / `SPEED_NON_NUMERIC` | 派生速度置空，禁止取绝对值 |
 | AIS | `MMSI_MISSING` / `IMO_UNVERIFIED` | 只做匿名观测计数，不做身份结论 |
 | ADS-B | `ICAO_MISSING` / `IDENTITY_UNVERIFIED` | 只做活动量和质量提示 |
-| AIS/ADS-B | `DUPLICATE_PRIMARY` / `DUPLICATE_FALLBACK` | 原始口径保留，去重口径只保留一条并记录数量 |
+| AIS | `HKEY_NOT_UNIQUE` | `IR_HKEY` 仅作源摘要，不参与唯一去重 |
+| AIS/ADS-B | `DEDUPE_KEY_INCOMPLETE` | 不与其他不完整行折叠，raw/deduped 均保留并单列数量 |
+| AIS/ADS-B | `DUPLICATE_COMPOSITE` | 原始口径保留，复合键完整时 deduped 只保留一条并记录数量 |
 | 样例 | `SAMPLE_IDENTITY_UNVERIFIED` | 仅内部方法演示，客户 Gate 强制拒绝 |
 | 来源 | `VISIBLE_AT_UNKNOWN` | 不参与历史时点评分 |
 
@@ -1518,7 +1692,8 @@ git diff --check
 
 | 阶段 | 状态 | 起点 commit | 阶段 commit | 验证摘要 | 产物/剩余项 | 更新时间 |
 | --- | --- | --- | --- | --- | --- | --- |
-| T0 | `NOT_STARTED` | - | - | - | 重新检查分支、输入和空间 | - |
+| T0 | `NOT_STARTED` | - | - | - | 重新检查分支、输入、空间、两种 foundation mode 和 Mock hash | - |
+| T0.5 | `NOT_STARTED` | - | - | - | 双专题 HTML Mock 人工评审；当前 `DRAFT_REVIEW_REQUIRED` | - |
 | T1 | `NOT_STARTED` | - | - | - | 来源与契约 | - |
 | T2 | `NOT_STARTED` | - | - | - | 自动校验门禁 | - |
 | T3 | `NOT_STARTED` | - | - | - | 事件与来源表 | - |
@@ -1539,6 +1714,7 @@ git diff --check
 只要总目标未完成，且没有以下停止条件，完成当前小批后必须立即更新记录并继续下一阶段，不得因“已生成一个 CSV”“已跑一次脚本”或“内部页面能打开”就输出最终答复停止：
 
 - `BLOCKED_CONFIRM`；
+- `PROTOTYPE_GATE` 尚未批准、结论为 `REVISE`，或审批 hash 与当前 Mock 不一致；
 - 测试、构建或数据对账失败且无法在当前阶段定位；
 - Git 冲突、无关脏文件或暂存范围无法隔离；
 - 需要客户授权、正式 AOI 审批，或即将进入尚未获得当轮授权的 T12/T13 外部写操作；
@@ -1599,11 +1775,13 @@ git -C "$GINTBROKER_ROOT" diff --check
 - bundled Python 3.12 和当前 `pandas/openpyxl` 在执行期间仍可用。
 - 目标船保持匿名不会削弱客户故事的核心价值。
 - `gintbroker` 通用专题 bundle 能在保留 HIMARS 旧 API/slow 键的前提下完成，不需要迁移全局实时 store。
+- HTML Mock 的双专题信息架构、客户降级和共享边界仍需用户/产品责任人明确批准；当前不推断为已定型。
+- 5 月先执行时可以 `bootstrap` common/foundation；6 月先执行时本计划能按两种探针切换 `reuse/resume`，不依赖固定执行顺序。
 - 目标环境继续使用 `Shadowbroker` 既有 Jenkins + Docker Compose 链路；执行 T13 前必须按当时文档和流水线现场复核。
 
 ### 10.3 后续建议
 
-1. 先完成 T0-T8 数据与小型 bundle，再完成 T9-T11 本地真实系统集成，只有 6 画面和 HIMARS 回归都通过才判 `INTERNAL_READY`。
+1. 先完成 T0/T0.5 并取得双专题 Mock 明确批准；再完成 T1-T8 数据与小型 bundle、T9-T11 本地真实系统集成，只有 6 画面和 HIMARS/已安装 6 月专题回归都通过才判 `INTERNAL_READY`。
 2. 客户 Gate 缺少正式 AOI 或授权时，仍可完成内部系统集成，但页面、截图和报告必须固定为 `INTERNAL_ONLY`，不得对外演示。
 3. T12/T13 保持独立授权点；本地验证通过不等于允许 push、合并或部署。
 4. 若客户明确要求实时能力，再按 `moye-v4-product` 数据接入、`doops-dev` 规则/证据治理、`gintbroker` 运行面分别拆计划，不能把三个系统合成一个大改造任务。
@@ -1615,3 +1793,5 @@ git -C "$GINTBROKER_ROOT" diff --check
 后续执行时直接使用：
 
 [$checkpointed-plan-executor](/Users/liushen/Documents/cursorDevs/trsdevops/devops_console/.agents/skills/checkpointed-plan-executor/SKILL.md) `/Users/liushen/Documents/githubDevs/dy-inta/devdoc/DYINT场景2-5月商船攻击候选目标分析与数据补强方案-实现计划.md`
+
+执行器必须先停在 T0.5 获取 `PROTOTYPE_GATE=APPROVED`；本轮创建 Mock 不等于用户已批准。
