@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>航迹数据 API 探索台 · 交互 Mock</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='5' width='22' height='22' rx='5' fill='%23061219' stroke='%235de4c7'/%3E%3Cpath d='M9 21l5-5 3 2 6-7' fill='none' stroke='%235de4c7' stroke-width='2'/%3E%3Ccircle cx='23' cy='11' r='2' fill='%23f6c86f'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050b10;
+      --surface: #09131a;
+      --surface-2: #0c1921;
+      --surface-3: #10232c;
+      --line: rgba(143, 190, 198, 0.18);
+      --line-strong: rgba(93, 228, 199, 0.38);
+      --text: #eaf4f2;
+      --muted: #8ba7aa;
+      --dim: #577178;
+      --accent: #5de4c7;
+      --accent-soft: rgba(93, 228, 199, 0.11);
+      --amber: #f6c86f;
+      --red: #ff7f87;
+      --blue: #72a7ff;
+      --purple: #b79aff;
+      --shadow: 0 18px 54px rgba(0, 0, 0, 0.38);
+      --ui: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+      --mono: "SFMono-Regular", "Roboto Mono", "Cascadia Code", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { background: var(--bg); color: var(--text); font-family: var(--ui); }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 314px minmax(620px, 1fr) 348px;
+      grid-template-rows: 58px minmax(0, 1fr) 244px 26px;
+      width: 100vw;
+      height: 100svh;
+      min-width: 1160px;
+      background:
+        radial-gradient(circle at 49% 25%, rgba(27, 111, 108, 0.12), transparent 34%),
+        var(--bg);
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 314px minmax(0, 1fr) auto;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background: rgba(6, 15, 21, 0.97);
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      height: 100%;
+      padding: 0 16px;
+      border-right: 1px solid var(--line);
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      background: var(--accent-soft);
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      position: absolute;
+      content: "";
+    }
+
+    .brand-mark::before {
+      inset: 8px;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+    }
+
+    .brand-mark::after {
+      width: 7px;
+      height: 7px;
+      top: 5px;
+      right: 4px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 12px rgba(246, 200, 111, 0.7);
+    }
+
+    .brand strong { display: block; font-size: 13px; letter-spacing: 0.08em; }
+    .brand small { display: block; margin-top: 2px; color: var(--muted); font: 9px var(--mono); letter-spacing: 0.08em; }
+
+    .top-context { display: flex; align-items: center; gap: 14px; min-width: 0; padding: 0 18px; }
+    .connection { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
+    .connection i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+    .endpoint { overflow: hidden; color: var(--dim); font: 10px var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+    .mock-badge { padding: 3px 7px; border: 1px solid rgba(246, 200, 111, 0.3); color: var(--amber); font: 9px var(--mono); letter-spacing: 0.06em; }
+
+    .top-actions { display: flex; align-items: center; gap: 8px; padding-right: 12px; }
+    .segmented { display: flex; padding: 3px; border: 1px solid var(--line); background: #050d12; }
+    .segmented button { min-height: 28px; padding: 0 10px; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 10px; }
+    .segmented button.is-active { color: #03110f; background: var(--accent); font-weight: 800; }
+    .top-button, .run-button, .plain-button, .icon-button {
+      border: 1px solid var(--line);
+      background: transparent;
+      cursor: pointer;
+    }
+    .top-button { min-height: 34px; padding: 0 11px; color: var(--muted); font-size: 11px; }
+    .top-button:hover, .plain-button:hover { color: var(--text); border-color: var(--line-strong); }
+    .run-button { min-height: 36px; padding: 0 18px; border-color: var(--accent); color: #03110f; background: var(--accent); font-weight: 820; font-size: 11px; }
+    .run-button.is-running { color: var(--accent); background: var(--accent-soft); }
+
+    .query-panel {
+      grid-column: 1;
+      grid-row: 2 / 4;
+      min-height: 0;
+      border-right: 1px solid var(--line);
+      background: rgba(7, 17, 24, 0.96);
+      overflow: hidden;
+    }
+
+    .panel-scroll { height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--dim) transparent; }
+    .panel-intro { padding: 16px; border-bottom: 1px solid var(--line); }
+    .eyebrow { color: var(--accent); font: 9px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; }
+    .panel-intro h1 { margin: 7px 0 5px; font-size: 19px; letter-spacing: -0.03em; }
+    .panel-intro p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+
+    .guided-note { margin-top: 12px; padding: 10px 11px; border-left: 2px solid var(--accent); background: var(--accent-soft); }
+    .guided-note strong { display: block; margin-bottom: 4px; font-size: 11px; }
+    .guided-note span { color: var(--muted); font-size: 10px; line-height: 1.5; }
+
+    .form-section { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .section-title strong { font-size: 11px; letter-spacing: 0.02em; }
+    .section-title span, .section-title button { color: var(--dim); font: 9px var(--mono); }
+    .section-title button { padding: 0; border: 0; background: none; cursor: pointer; }
+    .section-title button:hover { color: var(--accent); }
+
+    .task-list { display: grid; gap: 5px; }
+    .task-choice { display: grid; grid-template-columns: 26px 1fr; gap: 9px; align-items: center; width: 100%; padding: 8px; border: 1px solid transparent; color: var(--muted); background: transparent; text-align: left; cursor: pointer; }
+    .task-choice:hover { background: rgba(255,255,255,0.025); }
+    .task-choice.is-active { border-color: var(--line-strong); color: var(--text); background: var(--accent-soft); }
+    .task-choice b { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--line); border-radius: 50%; font: 9px var(--mono); }
+    .task-choice strong { display: block; font-size: 11px; }
+    .task-choice small { display: block; margin-top: 2px; color: var(--dim); font-size: 9px; }
+
+    .field { display: grid; gap: 5px; margin-top: 9px; }
+    .field:first-child { margin-top: 0; }
+    .field-label { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
+    .field-label code { color: var(--dim); font: 9px var(--mono); }
+    .input, select.input {
+      width: 100%;
+      min-height: 34px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      color: var(--text);
+      background: #061017;
+      font: 10px var(--mono);
+    }
+    .input:focus, select.input:focus { border-color: var(--accent); }
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .bbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .help-copy { color: var(--dim); font-size: 9px; line-height: 1.5; }
+    .field-inline { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+    .switch { position: relative; width: 31px; height: 18px; flex: none; }
+    .switch input { position: absolute; opacity: 0; pointer-events: none; }
+    .switch span { position: absolute; inset: 0; border: 1px solid var(--line); background: #061017; cursor: pointer; }
+    .switch span::after { position: absolute; width: 10px; height: 10px; top: 3px; left: 3px; background: var(--dim); content: ""; transition: transform .18s, background .18s; }
+    .switch input:checked + span { border-color: var(--line-strong); background: var(--accent-soft); }
+    .switch input:checked + span::after { background: var(--accent); transform: translateX(13px); }
+    .load-fields { display: none; margin-top: 8px; padding-left: 10px; border-left: 1px solid var(--line-strong); }
+    .load-fields.is-visible { display: block; }
+
+    .query-sentence { padding: 12px 16px; color: var(--muted); background: rgba(93,228,199,0.045); font-size: 10px; line-height: 1.65; }
+    .query-sentence strong { color: var(--text); }
+    .left-run { display: grid; grid-template-columns: 1fr auto; gap: 7px; padding: 12px 16px 18px; }
+    .plain-button { min-height: 36px; padding: 0 11px; color: var(--muted); font-size: 10px; }
+
+    .workspace { grid-column: 2; grid-row: 2; position: relative; min-height: 0; overflow: hidden; background: #061017; }
+    .workspace-head { position: absolute; z-index: 6; top: 0; right: 0; left: 0; display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 13px; border-bottom: 1px solid var(--line); background: rgba(6, 16, 23, 0.91); backdrop-filter: blur(12px); }
+    .view-tabs { display: flex; gap: 3px; }
+    .view-tabs button { min-height: 28px; padding: 0 10px; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 10px; }
+    .view-tabs button.is-active { color: var(--accent); background: var(--accent-soft); }
+    .workspace-tools { display: flex; align-items: center; gap: 7px; }
+    .tool-chip { padding: 5px 8px; border: 1px solid var(--line); color: var(--muted); background: rgba(5, 13, 18, .72); font: 9px var(--mono); cursor: pointer; }
+    .tool-chip.is-active { color: var(--accent); border-color: var(--line-strong); }
+
+    .view { position: absolute; inset: 48px 0 0; display: none; }
+    .view.is-active { display: block; }
+    .map-view { overflow: hidden; }
+    .map-view::after { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent 0 4px, rgba(255,255,255,.008) 4px 5px); content: ""; }
+    #exploreMap { width: 100%; height: 100%; background: radial-gradient(circle at 56% 47%, rgba(36, 132, 127, 0.16), transparent 25%), #06141c; }
+    .grid-line { stroke: rgba(106, 173, 181, .08); stroke-width: 1; }
+    .land { fill: #0c2429; stroke: rgba(135, 203, 197, .24); stroke-width: 1.2; }
+    .coast { fill: none; stroke: rgba(93,228,199,.22); stroke-width: 1.1; }
+    .map-label { fill: #58787c; font: 11px var(--mono); letter-spacing: .09em; }
+    .water-label { fill: #315963; font: 9px var(--mono); letter-spacing: .12em; }
+    .bbox { fill: rgba(93,228,199,.05); stroke: rgba(93,228,199,.6); stroke-width: 1.4; stroke-dasharray: 7 5; }
+    .track { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; filter: url(#glow); }
+    .track.secondary { stroke: var(--blue); opacity: .7; }
+    .track.ship { stroke: var(--amber); }
+    .point { cursor: pointer; }
+    .point circle { fill: #07141b; stroke: var(--accent); stroke-width: 2; transition: r .16s, fill .16s; }
+    .point.ship circle { stroke: var(--amber); }
+    .point:hover circle, .point.is-active circle { r: 7; fill: var(--accent); }
+    .point.ship:hover circle, .point.ship.is-active circle { fill: var(--amber); }
+
+    .map-summary { position: absolute; z-index: 4; top: 65px; right: 12px; left: 14px; min-height: 70px; padding: 13px 395px 13px 15px; border-left: 2px solid var(--accent); background: rgba(5, 14, 20, .88); box-shadow: var(--shadow); backdrop-filter: blur(10px); }
+    .map-summary strong { display: block; font-size: 13px; }
+    .map-summary p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .map-legend { position: absolute; z-index: 4; right: 12px; bottom: 80px; display: flex; gap: 11px; padding: 7px 9px; border: 1px solid var(--line); color: var(--muted); background: rgba(5,14,20,.82); font-size: 9px; }
+    .legend-dot { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 50%; background: var(--accent); }
+    .legend-dot.ship { background: var(--amber); }
+    .legend-line { display: inline-block; width: 16px; margin-right: 4px; border-top: 1px dashed var(--accent); vertical-align: 3px; }
+
+    .playback { position: absolute; z-index: 5; right: 12px; bottom: 12px; left: 12px; display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 11px; align-items: center; min-height: 54px; padding: 9px 11px; border: 1px solid var(--line); background: rgba(5,14,20,.92); box-shadow: var(--shadow); }
+    .icon-button { width: 32px; height: 32px; color: var(--accent); }
+    .icon-button:hover { background: var(--accent-soft); }
+    .timeline-wrap { display: grid; gap: 5px; }
+    .timeline-meta { display: flex; justify-content: space-between; color: var(--muted); font: 9px var(--mono); }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .playback strong { font: 10px var(--mono); }
+
+    .metrics-bar { position: absolute; z-index: 4; right: 12px; top: 64px; display: grid; grid-template-columns: repeat(4, minmax(78px, 1fr)); min-width: 380px; border: 1px solid var(--line); background: rgba(5,14,20,.88); box-shadow: var(--shadow); backdrop-filter: blur(10px); }
+    .metric { min-width: 0; padding: 9px 10px; border-left: 1px solid var(--line); }
+    .metric:first-child { border-left: 0; }
+    .metric span { display: block; color: var(--dim); font: 8px var(--mono); text-transform: uppercase; }
+    .metric strong { display: block; overflow: hidden; margin-top: 4px; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .metric strong.accent { color: var(--accent); }
+
+    .table-view { overflow: auto; background: #071119; }
+    .data-table { width: 100%; min-width: 920px; border-collapse: collapse; font-size: 10px; }
+    .data-table th { position: sticky; top: 0; z-index: 2; height: 38px; padding: 0 10px; border-bottom: 1px solid var(--line); color: var(--dim); background: #09151d; text-align: left; font: 9px var(--mono); }
+    .data-table td { height: 39px; padding: 0 10px; border-bottom: 1px solid rgba(143,190,198,.1); color: var(--muted); font-family: var(--mono); }
+    .data-table tr { cursor: pointer; }
+    .data-table tbody tr:hover, .data-table tbody tr.is-active { background: var(--accent-soft); }
+    .data-table td strong { color: var(--text); font-weight: 650; }
+
+    .quality-view { padding: 22px; overflow: auto; background: #071119; }
+    .quality-lead { max-width: 780px; }
+    .quality-lead h2 { margin: 0 0 7px; font-size: 18px; }
+    .quality-lead p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
+    .quality-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 28px; margin-top: 25px; }
+    .quality-section { border-top: 1px solid var(--line); }
+    .quality-row { display: grid; grid-template-columns: 140px 1fr auto; gap: 12px; align-items: center; min-height: 45px; border-bottom: 1px solid var(--line); font-size: 10px; }
+    .quality-row span { color: var(--muted); }
+    .quality-row strong { font-family: var(--mono); }
+    .bar { height: 4px; background: #13262d; }
+    .bar i { display: block; height: 100%; background: var(--accent); }
+    .state-ok { color: var(--accent); }
+    .state-warn { color: var(--amber); }
+    .diagnostic-list { display: grid; gap: 9px; margin-top: 12px; }
+    .diagnostic { display: grid; grid-template-columns: 22px 1fr; gap: 9px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .diagnostic b { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid rgba(246,200,111,.38); color: var(--amber); font: 9px var(--mono); }
+    .diagnostic strong { display: block; font-size: 10px; }
+    .diagnostic p { margin: 4px 0 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
+
+    .inspector { grid-column: 3; grid-row: 2 / 4; min-height: 0; border-left: 1px solid var(--line); background: rgba(7,17,24,.97); overflow: hidden; }
+    .inspector-head { padding: 15px 15px 13px; border-bottom: 1px solid var(--line); }
+    .inspector-head h2 { margin: 6px 0 4px; font-size: 15px; }
+    .inspector-head p { margin: 0; color: var(--muted); font: 9px/1.55 var(--mono); }
+    .inspector-tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); }
+    .inspector-tabs button { min-height: 37px; border: 0; border-right: 1px solid var(--line); color: var(--muted); background: transparent; cursor: pointer; font-size: 10px; }
+    .inspector-tabs button:last-child { border-right: 0; }
+    .inspector-tabs button.is-active { color: var(--accent); background: var(--accent-soft); }
+    .inspector-body { height: calc(100% - 111px); overflow-y: auto; }
+    .inspector-section { padding: 14px 15px; border-bottom: 1px solid var(--line); }
+    .inspector-section h3 { margin: 0 0 10px; font-size: 10px; letter-spacing: .04em; }
+    .kv { display: grid; grid-template-columns: 106px 1fr; min-height: 30px; align-items: center; border-bottom: 1px solid rgba(143,190,198,.09); font: 9px var(--mono); }
+    .kv span { color: var(--dim); }
+    .kv strong { overflow: hidden; color: var(--text); font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+    .quality-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid var(--line); color: var(--muted); font-size: 9px; }
+    .quality-pill i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .callout { padding: 10px; border-left: 2px solid var(--amber); color: var(--muted); background: rgba(246,200,111,.06); font-size: 9px; line-height: 1.6; }
+    .next-actions { display: grid; gap: 6px; }
+    .next-actions button { padding: 9px 10px; border: 1px solid var(--line); color: var(--muted); background: transparent; text-align: left; cursor: pointer; font-size: 9px; }
+    .next-actions button:hover { color: var(--text); border-color: var(--line-strong); }
+    .field-dict { display: grid; }
+    .dict-row { padding: 9px 0; border-bottom: 1px solid var(--line); }
+    .dict-row code { color: var(--accent); font-size: 9px; }
+    .dict-row strong { float: right; color: var(--dim); font: 8px var(--mono); }
+    .dict-row p { margin: 4px 0 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
+
+    .console { grid-column: 2; grid-row: 3; min-height: 0; border-top: 1px solid var(--line); background: #050d12; overflow: hidden; }
+    .console-head { display: flex; align-items: center; justify-content: space-between; height: 37px; padding: 0 10px; border-bottom: 1px solid var(--line); }
+    .console-tabs { display: flex; height: 100%; }
+    .console-tabs button { padding: 0 11px; border: 0; color: var(--muted); background: transparent; cursor: pointer; font: 9px var(--mono); }
+    .console-tabs button.is-active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+    .console-actions { display: flex; gap: 6px; }
+    .console-actions button { padding: 4px 8px; border: 1px solid var(--line); color: var(--muted); background: transparent; cursor: pointer; font-size: 9px; }
+    .console-body { height: calc(100% - 37px); overflow: auto; }
+    .console-pane { display: none; min-height: 100%; }
+    .console-pane.is-active { display: block; }
+    pre { margin: 0; padding: 14px 16px; color: #b9d4d1; font: 10px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; }
+    .json-key { color: var(--blue); }
+    .json-value { color: var(--amber); }
+    .code-toolbar { display: flex; align-items: center; gap: 5px; padding: 8px 12px 0; }
+    .code-toolbar button { padding: 4px 8px; border: 1px solid var(--line); color: var(--muted); background: transparent; cursor: pointer; font-size: 9px; }
+    .code-toolbar button.is-active { color: var(--accent); border-color: var(--line-strong); }
+    .history-row { display: grid; grid-template-columns: 120px 80px 1fr 72px 70px; gap: 10px; align-items: center; min-height: 38px; padding: 0 14px; border-bottom: 1px solid var(--line); color: var(--muted); font: 9px var(--mono); }
+    .history-row strong { color: var(--text); }
+    .history-row button { border: 0; color: var(--accent); background: none; cursor: pointer; font: 9px var(--mono); }
+
+    .statusbar { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-top: 1px solid var(--line); color: var(--dim); background: #03080c; font: 8px var(--mono); letter-spacing: .04em; }
+    .statusbar strong { color: var(--amber); }
+    .progress { position: fixed; z-index: 80; top: 58px; left: 0; width: 0; height: 2px; background: var(--accent); box-shadow: 0 0 12px var(--accent); transition: width .5s ease; }
+    .toast { position: fixed; z-index: 100; right: 18px; bottom: 38px; max-width: 360px; padding: 10px 12px; border: 1px solid var(--line-strong); color: var(--text); background: #0a181f; box-shadow: var(--shadow); font-size: 10px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s, transform .18s; }
+    .toast.is-visible { opacity: 1; transform: translateY(0); }
+
+    dialog { width: min(920px, calc(100vw - 48px)); max-height: calc(100vh - 48px); padding: 0; border: 1px solid var(--line-strong); color: var(--text); background: #08141b; box-shadow: 0 30px 90px rgba(0,0,0,.7); }
+    dialog::backdrop { background: rgba(1,6,9,.78); backdrop-filter: blur(3px); }
+    .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+    .dialog-head h2 { margin: 0 0 5px; font-size: 17px; }
+    .dialog-head p { margin: 0; color: var(--muted); font-size: 10px; }
+    .dialog-close { width: 30px; height: 30px; border: 1px solid var(--line); color: var(--muted); background: transparent; cursor: pointer; }
+    .dialog-body { padding: 20px; overflow: auto; }
+    .architecture { display: grid; grid-template-columns: 1fr 56px 1fr 56px 1fr; gap: 12px; align-items: center; }
+    .arch-node { min-height: 126px; padding: 14px; border-top: 2px solid var(--accent); background: var(--surface-2); }
+    .arch-node strong { display: block; font-size: 12px; }
+    .arch-node code { display: block; margin-top: 6px; color: var(--accent); font-size: 9px; }
+    .arch-node p { margin: 10px 0 0; color: var(--muted); font-size: 9px; line-height: 1.6; }
+    .arch-arrow { color: var(--dim); text-align: center; font: 20px var(--mono); }
+    .dialog-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
+    .dialog-notes section { padding-top: 12px; border-top: 1px solid var(--line); }
+    .dialog-notes h3 { margin: 0 0 7px; font-size: 10px; }
+    .dialog-notes p, .dialog-notes li { color: var(--muted); font-size: 9px; line-height: 1.7; }
+
+    .expert-only { display: none; }
+    .app[data-mode="expert"] .expert-only { display: block; }
+    .app[data-mode="expert"] .guided-note { display: none; }
+
+    @keyframes drawTrack { from { stroke-dashoffset: 280; } to { stroke-dashoffset: 0; } }
+    .track { stroke-dasharray: 280; animation: drawTrack 1.1s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes pointIn { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+    .point { transform-box: fill-box; transform-origin: center; animation: pointIn .35s ease both; }
+
+    @media (max-width: 1320px) {
+      .app { grid-template-columns: 292px minmax(580px, 1fr) 320px; }
+      .topbar { grid-template-columns: 292px minmax(0,1fr) auto; }
+      .metrics-bar { min-width: 330px; }
+    }
+
+    @media (max-width: 1180px) {
+      .app { min-width: 0; grid-template-columns: 284px minmax(0,1fr); }
+      .topbar { grid-template-columns: 284px minmax(0,1fr) auto; }
+      .inspector { display: none; }
+      .endpoint { display: none; }
+    }
+
+    @media (max-width: 760px) {
+      html, body { overflow: auto; }
+      .app { display: block; min-width: 0; height: auto; min-height: 100svh; }
+      .topbar { position: sticky; top: 0; display: flex; justify-content: space-between; height: 56px; }
+      .brand { border-right: 0; }
+      .top-context, .top-actions .segmented, .top-button { display: none; }
+      .query-panel { height: auto; border-right: 0; }
+      .panel-scroll { overflow: visible; }
+      .workspace { height: 620px; }
+      .console { height: 300px; }
+      .inspector { display: block; height: 540px; border-left: 0; border-top: 1px solid var(--line); }
+      .statusbar { display: none; }
+      .metrics-bar { top: auto; right: 8px; bottom: 74px; left: 8px; min-width: 0; }
+      .map-summary { top: 58px; padding-right: 15px; }
+      .map-legend { display: none; }
+      .playback { right: 8px; bottom: 8px; left: 8px; }
+      .quality-grid, .dialog-notes { grid-template-columns: 1fr; }
+      .architecture { grid-template-columns: 1fr; }
+      .arch-arrow { transform: rotate(90deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app" data-mode="guide" data-dataset="adsb">
+    <div class="progress" id="progress"></div>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div><strong>航迹数据 API 探索台</strong><small>TRACK DATA EXPLORER</small></div>
+      </div>
+      <div class="top-context">
+        <span class="connection"><i></i><strong>连接正常</strong> · token 剩余 01:37</span>
+        <span class="endpoint">dh.trs.cn / datas/api</span>
+        <span class="mock-badge">INTERACTIVE MOCK</span>
+      </div>
+      <div class="top-actions">
+        <div class="segmented" aria-label="使用模式">
+          <button type="button" class="is-active" data-mode="guide">新手模式</button>
+          <button type="button" data-mode="expert">专家模式</button>
+        </div>
+        <button type="button" class="top-button" id="healthCheck">连接检测</button>
+        <button type="button" class="top-button" id="openArchitecture">工具说明</button>
+        <button type="button" class="run-button" data-run>运行查询</button>
+      </div>
+    </header>
+
+    <aside class="query-panel" aria-label="查询条件">
+      <div class="panel-scroll">
+        <section class="panel-intro">
+          <div class="eyebrow">QUERY BUILDER</div>
+          <h1>先说你想看什么</h1>
+          <p>工具会生成参数、检查边界，并把结果解释成地图、表格和质量诊断。</p>
+          <div class="guided-note"><strong>第一次使用，从预设开始</strong><span>选择任务和场景后直接运行。高级分页、排序与入库时间由工具处理。</span></div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-title"><strong>1 · 数据类型</strong><span>REQUIRED</span></div>
+          <div class="segmented" id="datasetSwitch">
+            <button type="button" class="is-active" data-dataset="adsb">飞机 ADS-B</button>
+            <button type="button" data-dataset="ais">船舶 AIS</button>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-title"><strong>2 · 想完成的任务</strong><span>ONE CLICK</span></div>
+          <div class="task-list">
+            <button type="button" class="task-choice is-active" data-task="region"><b>01</b><span><strong>看一个区域</strong><small>按时间和矩形范围探索活动</small></span></button>
+            <button type="button" class="task-choice" data-task="object"><b>02</b><span><strong>追一个对象</strong><small>输入 ICAO 或 MMSI 回放轨迹</small></span></button>
+            <button type="button" class="task-choice" data-task="increment"><b>03</b><span><strong>检查增量</strong><small>用入库时间寻找迟到和新增记录</small></span></button>
+            <button type="button" class="task-choice expert-only" data-task="raw"><b>04</b><span><strong>原始调试</strong><small>手工控制页码、页长和排序</small></span></button>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-title"><strong>3 · 场景与范围</strong><button type="button" id="drawBbox">在地图框选</button></div>
+          <div class="field">
+            <label class="field-label" for="preset">常用预设 <code>preset</code></label>
+            <select class="input" id="preset">
+              <option value="jordan">约旦及周边航空</option>
+              <option value="hormuz-air">霍尔木兹周边航空</option>
+              <option value="hormuz-ship">霍尔木兹及周边海事</option>
+              <option value="custom">自定义范围</option>
+            </select>
+          </div>
+          <div class="bbox-grid">
+            <div class="field"><label class="field-label" for="minLon">最小经度 <code>minLon</code></label><input class="input" id="minLon" value="34.0" inputmode="decimal"></div>
+            <div class="field"><label class="field-label" for="maxLon">最大经度 <code>maxLon</code></label><input class="input" id="maxLon" value="40.0" inputmode="decimal"></div>
+            <div class="field"><label class="field-label" for="minLat">最小纬度 <code>minLat</code></label><input class="input" id="minLat" value="29.0" inputmode="decimal"></div>
+            <div class="field"><label class="field-label" for="maxLat">最大纬度 <code>maxLat</code></label><input class="input" id="maxLat" value="34.0" inputmode="decimal"></div>
+          </div>
+          <div class="help-copy">四个值构成矩形查询范围。地图框选只回填参数，不直接发送请求。</div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-title"><strong>4 · 观测时间</strong><span>start / end PubTime</span></div>
+          <div class="input-grid">
+            <div class="field"><label class="field-label" for="startTime">开始</label><input class="input" id="startTime" type="datetime-local" value="2026-07-29T05:30:00" step="1"></div>
+            <div class="field"><label class="field-label" for="endTime">结束</label><input class="input" id="endTime" type="datetime-local" value="2026-07-29T06:00:00" step="1"></div>
+          </div>
+          <div class="help-copy">飞机对应 `receiveTime`，船舶对应 `lastdyn`。接口时区未说明，工具保留原始时间。</div>
+        </section>
+
+        <section class="form-section" id="identitySection">
+          <div class="section-title"><strong>5 · 对象标识</strong><span>OPTIONAL</span></div>
+          <div class="field">
+            <label class="field-label" for="identity"><span id="identityLabel">飞机 ICAO</span><code id="identityCode">icao</code></label>
+            <input class="input" id="identity" placeholder="留空表示区域内所有飞机">
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="field-inline">
+            <div><strong style="font-size:11px">增量入库窗口</strong><div class="help-copy">按记录何时进入服务查询</div></div>
+            <label class="switch"><input id="loadToggle" type="checkbox"><span></span></label>
+          </div>
+          <div class="load-fields" id="loadFields">
+            <div class="field"><label class="field-label" for="startLoad">开始入库时间 <code>startLoadTime</code></label><input class="input" id="startLoad" type="datetime-local" value="2026-07-29T08:00:00" step="1"></div>
+            <div class="field"><label class="field-label" for="endLoad">结束入库时间 <code>endLoadTime</code></label><input class="input" id="endLoad" type="datetime-local" value="2026-07-29T08:15:00" step="1"></div>
+            <div class="help-copy"><strong style="color:var(--text)">`endLoadTime` 就是结束入库时间。</strong>钉钉文档把它误写成了第二个 `startLoadTime`，实际调用已验证有效。</div>
+          </div>
+        </section>
+
+        <section class="form-section expert-only">
+          <div class="section-title"><strong>高级控制</strong><span>EXPERT</span></div>
+          <div class="input-grid">
+            <div class="field"><label class="field-label" for="pageSize">每页条数 <code>pageSize</code></label><input class="input" id="pageSize" type="number" min="1" max="1000" value="1000"></div>
+            <div class="field"><label class="field-label" for="sorts">排序 <code>sorts</code></label><select class="input" id="sorts"><option value="pubTime">观测时间升序</option><option value="-pubTime">观测时间倒序</option><option value="loadTime">入库时间升序</option><option value="-loadTime">入库时间倒序</option></select></div>
+          </div>
+          <div class="field-inline" style="margin-top:10px"><div><strong style="font-size:10px">自动时间切片</strong><div class="help-copy">超过 1000 条时自动二分，避免普通翻页重复/漏数</div></div><label class="switch"><input id="autoSlice" type="checkbox" checked><span></span></label></div>
+        </section>
+
+        <div class="query-sentence" id="querySentence"></div>
+        <div class="left-run"><button type="button" class="run-button" data-run>运行并解释结果</button><button type="button" class="plain-button" id="resetQuery">重置</button></div>
+      </div>
+    </aside>
+
+    <main class="workspace" aria-label="数据探索工作区">
+      <div class="workspace-head">
+        <div class="view-tabs" role="tablist">
+          <button type="button" class="is-active" data-view="map">地图与回放</button>
+          <button type="button" data-view="table">数据表</button>
+          <button type="button" data-view="quality">质量诊断</button>
+        </div>
+        <div class="workspace-tools">
+          <button type="button" class="tool-chip is-active" data-layer="tracks">轨迹</button>
+          <button type="button" class="tool-chip is-active" data-layer="points">点位</button>
+          <button type="button" class="tool-chip" id="fitBounds">适配范围</button>
+          <button type="button" class="tool-chip" id="exportData">导出 CSV</button>
+        </div>
+      </div>
+
+      <section class="view map-view is-active" data-view-panel="map">
+        <svg id="exploreMap" viewBox="0 0 1000 620" role="img" aria-labelledby="mapTitle mapDesc" preserveAspectRatio="xMidYMid slice">
+          <title id="mapTitle">航迹数据探索示意地图</title>
+          <desc id="mapDesc">内置示意轨迹，用于评审查询、选择和回放交互，不发起真实外部请求。</desc>
+          <defs><filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <g id="mapGrid"></g>
+          <g id="baseMap"></g>
+          <g id="bboxLayer"></g>
+          <g id="trackLayer"></g>
+          <g id="pointLayer"></g>
+        </svg>
+        <div class="map-summary"><strong id="mapSummaryTitle">约旦及周边 · ADS-B 历史回放</strong><p id="mapSummaryCopy">正在查看 2026-07-29 05:30—06:00 的示意查询结果。点击轨迹点可查看原始字段和质量说明。</p></div>
+        <div class="metrics-bar">
+          <div class="metric"><span>记录数</span><strong class="accent" id="metricRecords">22</strong></div>
+          <div class="metric"><span>对象数</span><strong id="metricObjects">5</strong></div>
+          <div class="metric"><span>最新观测</span><strong id="metricLatest">05:59:05</strong></div>
+          <div class="metric"><span>请求耗时</span><strong id="metricLatency">2.36 s</strong></div>
+        </div>
+        <div class="map-legend"><span><i class="legend-dot"></i>ADS-B</span><span><i class="legend-dot ship"></i>AIS</span><span><i class="legend-line"></i>查询范围</span></div>
+        <div class="playback">
+          <button type="button" class="icon-button" id="playButton" aria-label="播放">▶</button>
+          <div class="timeline-wrap"><div class="timeline-meta"><span id="timelineStart">05:30:00</span><span id="timelineCurrent">05:50:00 · 15 / 22 条可见</span><span id="timelineEnd">06:00:00</span></div><input id="timeline" type="range" min="1" max="6" value="4"></div>
+          <strong>1×</strong>
+        </div>
+      </section>
+
+      <section class="view table-view" data-view-panel="table"><table class="data-table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></section>
+
+      <section class="view quality-view" data-view-panel="quality">
+        <div class="quality-lead"><div class="eyebrow">DATA FITNESS</div><h2 id="qualityTitle">这批数据适合做区域活动回放，不适合直接计算真实恢复率</h2><p id="qualityLead">质量诊断同时检查字段完整性、点位密度、入库延迟和分页稳定性。结论只约束这次查询结果，不替代数据源总体评级。</p></div>
+        <div class="quality-grid">
+          <section class="quality-section" id="qualityRows"></section>
+          <section><div class="section-title"><strong>自动发现的问题</strong><span>DIAGNOSTICS</span></div><div class="diagnostic-list" id="diagnosticList"></div></section>
+        </div>
+      </section>
+    </main>
+
+    <aside class="inspector" aria-label="记录与字段检查器">
+      <div class="inspector-head"><div class="eyebrow" id="inspectorEyebrow">SELECTED RECORD</div><h2 id="inspectorTitle">选择一条记录查看详情</h2><p id="inspectorSubtitle">地图点、表格行和原始 JSON 会保持联动</p></div>
+      <div class="inspector-tabs"><button type="button" class="is-active" data-inspector="record">当前记录</button><button type="button" data-inspector="analysis">质量解释</button><button type="button" data-inspector="dictionary">字段字典</button></div>
+      <div class="inspector-body" id="inspectorBody"></div>
+    </aside>
+
+    <section class="console" aria-label="请求与响应控制台">
+      <div class="console-head">
+        <div class="console-tabs"><button type="button" class="is-active" data-console="request">请求预览</button><button type="button" data-console="response">响应样例</button><button type="button" data-console="code">代码生成</button><button type="button" data-console="history">调用历史</button><button type="button" data-console="diagnostics">执行诊断</button></div>
+        <div class="console-actions"><button type="button" id="copyConsole">复制当前内容</button><button type="button" id="collapseConsole">收起</button></div>
+      </div>
+      <div class="console-body">
+        <div class="console-pane is-active" data-console-panel="request"><pre id="requestPreview"></pre></div>
+        <div class="console-pane" data-console-panel="response"><pre id="responsePreview"></pre></div>
+        <div class="console-pane" data-console-panel="code"><div class="code-toolbar"><button type="button" class="is-active" data-language="python">Python 3</button><button type="button" data-language="go">Go</button><button type="button" data-language="curl">cURL</button></div><pre id="codePreview"></pre></div>
+        <div class="console-pane" data-console-panel="history" id="historyPane"></div>
+        <div class="console-pane" data-console-panel="diagnostics"><pre id="executionDiagnostics"></pre></div>
+      </div>
+    </section>
+
+    <footer class="statusbar"><span><strong>MOCK</strong> · 内置示意数据 · 不发送真实请求 · 不保存凭据</span><span id="statusText">QUERY READY · ADS-B · JORDAN · AUTO-SLICE ON</span></footer>
+  </div>
+
+  <dialog id="architectureDialog" aria-labelledby="architectureTitle">
+    <div class="dialog-head"><div><h2 id="architectureTitle">浏览器只负责探索，Go 服务负责实际调用</h2><p>避免在前端保存账号、密码和 token；同一 Go 接口同时服务在线探索、历史任务和后续自动采集。</p></div><button type="button" class="dialog-close" id="closeArchitecture" aria-label="关闭">×</button></div>
+    <div class="dialog-body">
+      <div class="architecture">
+        <section class="arch-node"><strong>Web 探索台</strong><code>query / map / table / diagnose</code><p>傻瓜式参数向导、轨迹回放、字段解释、请求历史和代码生成。Mock 评审通过后再工程化。</p></section>
+        <div class="arch-arrow">→</div>
+        <section class="arch-node"><strong>Go API Gateway</strong><code>auth / query / slice / export</code><p>管理登录和 token，校验参数，自适应时间切片，统一错误码，生成可恢复任务和审计记录。</p></section>
+        <div class="arch-arrow">→</div>
+        <section class="arch-node"><strong>外部数据 API</strong><code>ADS-B / AIS</code><p>按当前有限契约调用。工具不假设未说明的时区、单位、覆盖、限流和数据质量。</p></section>
+      </div>
+      <div class="dialog-notes">
+        <section><h3>普通用户看到什么</h3><ul><li>按业务问题选择查询，不需要先学参数名。</li><li>超过单页上限自动切片，默认不暴露页码。</li><li>空结果、稀疏轨迹和入库延迟直接翻译成可执行提示。</li><li>任何结果都能复制参数、生成 Python/Go 示例并加入调用历史。</li></ul></section>
+        <section><h3>工程实现边界</h3><ul><li>本文件是交互 Mock，不连接真实 API。</li><li>Go 后端才读取凭据并保存 token，浏览器不接触原始密码。</li><li>查询任务保存参数、采集时间、业务 code、requestid、总数和 SHA-256。</li><li>第一版只读；不做压测，不推断提供方未公布的配额。</li></ul></section>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const datasets = {
+      adsb: {
+        label: "飞机 ADS-B",
+        identityLabel: "飞机 ICAO",
+        identityCode: "icao",
+        identityPlaceholder: "留空表示区域内所有飞机",
+        endpoint: "/base/osint/aircraft/adsb/list",
+        preset: "jordan",
+        records: 22,
+        objects: 5,
+        latest: "05:59:05",
+        latency: "2.36 s",
+        rows: [
+          { id:"DEMO-A-01", icao:"DEMO01", country:"示例国 A", lon:"35.92", lat:"31.96", receiveTime:"2026-07-29 05:31:25", loadTime:"2026-07-29 08:12:33", heading:"086", height:"10180", speed:"812", type:"Narrow-body", registration:"DEMO-01", planeType:"民航", x:276, y:363 },
+          { id:"DEMO-A-02", icao:"DEMO02", country:"示例国 B", lon:"36.48", lat:"32.10", receiveTime:"2026-07-29 05:41:22", loadTime:"2026-07-29 08:12:33", heading:"074", height:"9480", speed:"765", type:"Business Jet", registration:"DEMO-02", planeType:"公务机", x:362, y:320 },
+          { id:"DEMO-A-03", icao:"DEMO03", country:"示例国 C", lon:"37.24", lat:"31.62", receiveTime:"2026-07-29 05:44:27", loadTime:"2026-07-29 08:12:33", heading:"102", height:"11200", speed:"830", type:"Wide-body", registration:"DEMO-03", planeType:"民航", x:474, y:374 },
+          { id:"DEMO-A-04", icao:"DEMO01", country:"示例国 A", lon:"38.08", lat:"31.84", receiveTime:"2026-07-29 05:50:27", loadTime:"2026-07-29 08:12:33", heading:"090", height:"10230", speed:"820", type:"Narrow-body", registration:"DEMO-01", planeType:"民航", x:594, y:350 },
+          { id:"DEMO-A-05", icao:"DEMO04", country:"示例国 D", lon:"38.82", lat:"32.44", receiveTime:"2026-07-29 05:55:25", loadTime:"2026-07-29 08:12:33", heading:"118", height:"8750", speed:"702", type:"Regional Jet", registration:"DEMO-04", planeType:"民航", x:708, y:286 },
+          { id:"DEMO-A-06", icao:"DEMO05", country:"示例国 E", lon:"39.42", lat:"31.77", receiveTime:"2026-07-29 05:59:05", loadTime:"2026-07-29 08:12:33", heading:"095", height:"10900", speed:"798", type:"Cargo", registration:"DEMO-05", planeType:"运输机", x:804, y:356 }
+        ],
+        fields: [
+          ["receiveTime","点位接收时间","文档明确"],["loadTime","记录进入服务的时间","实测确认"],["icao","飞机 ICAO 唯一标识","文档明确"],["height","高度，文档称单位为米","文档明确"],["speed","速度，文档称 km/h","文档明确"],["heading","航向，单位待补充说明","待确认"],["planeType","飞机类别，分类来源未说明","待确认"]
+        ],
+        quality: { completeness:99.6, coordinate:100, identity:100, density:38, freshness:92 },
+        diagnostics: [
+          ["P0","普通分页不稳定","相同历史条件的相邻请求曾出现总数变化和跨页重复；本工具默认自动时间切片。"],
+          ["P1","航迹密度不均","单架飞机 30 分钟可能只有 1 个点，不能把折线自动解释为连续实际航路。"],
+          ["P1","时区仍待确认","原始时间会保留；CST/UTC 只作为可切换试算，不覆盖源值。"]
+        ]
+      },
+      ais: {
+        label: "船舶 AIS",
+        identityLabel: "船舶 MMSI",
+        identityCode: "mmsi",
+        identityPlaceholder: "留空表示区域内所有船舶",
+        endpoint: "/base/osint/ship/ais/list",
+        preset: "hormuz-ship",
+        records: 16,
+        objects: 16,
+        latest: "05:57:49",
+        latency: "3.45 s",
+        rows: [
+          { id:"DEMO-S-01", mmsi:"DEMO0001", name:"MERCHANT A", country:"示例船旗 A", lon:"55.20", lat:"26.42", lastdyn:"2026-07-29 05:08:14", loadTime:"2026-07-29 07:59:01", heading:"072", sog:"11.8", cog:"069.4", rot:"0.0", type:"货船", length:"228", imo:"DEMO-IMO-1", x:214, y:350 },
+          { id:"DEMO-S-02", mmsi:"DEMO0002", name:"TANKER B", country:"示例船旗 B", lon:"55.78", lat:"26.58", lastdyn:"2026-07-29 05:17:39", loadTime:"2026-07-29 07:59:01", heading:"084", sog:"10.4", cog:"081.1", rot:"0.1", type:"油轮", length:"274", imo:"DEMO-IMO-2", x:332, y:320 },
+          { id:"DEMO-S-03", mmsi:"DEMO0003", name:"CONTAINER C", country:"示例船旗 C", lon:"56.34", lat:"26.39", lastdyn:"2026-07-29 05:26:18", loadTime:"2026-07-29 07:59:01", heading:"098", sog:"13.2", cog:"095.8", rot:"0.0", type:"集装箱船", length:"302", imo:"DEMO-IMO-3", x:445, y:361 },
+          { id:"DEMO-S-04", mmsi:"DEMO0001", name:"MERCHANT A", country:"示例船旗 A", lon:"56.88", lat:"26.18", lastdyn:"2026-07-29 05:39:50", loadTime:"2026-07-29 07:59:01", heading:"111", sog:"9.7", cog:"108.5", rot:"-0.1", type:"货船", length:"228", imo:"DEMO-IMO-1", x:560, y:398 },
+          { id:"DEMO-S-05", mmsi:"DEMO0002", name:"TANKER B", country:"示例船旗 B", lon:"57.40", lat:"25.92", lastdyn:"2026-07-29 05:48:10", loadTime:"2026-07-29 07:59:01", heading:"124", sog:"12.1", cog:"121.6", rot:"0.0", type:"油轮", length:"274", imo:"DEMO-IMO-2", x:678, y:440 },
+          { id:"DEMO-S-06", mmsi:"DEMO0003", name:"CONTAINER C", country:"示例船旗 C", lon:"58.01", lat:"25.60", lastdyn:"2026-07-29 05:57:49", loadTime:"2026-07-29 07:59:01", heading:"132", sog:"10.8", cog:"129.3", rot:"0.0", type:"集装箱船", length:"302", imo:"DEMO-IMO-3", x:806, y:488 }
+        ],
+        fields: [
+          ["lastdyn","船舶动态点接收时间","文档明确"],["loadTime","记录进入服务的时间","实测确认"],["mmsi","船舶 MMSI 标识","文档明确"],["sog","对地航速，单位未说明","待确认"],["cog","对地航向，单位未说明","待确认"],["rot","转向率，编码与单位未说明","待确认"],["imo","IMO 编号，可能为空","实测确认"]
+        ],
+        quality: { completeness:97, coordinate:100, identity:100, density:24, freshness:70 },
+        diagnostics: [
+          ["P0","轨迹可能非常稀疏","某船 24 小时样本仅 2 个点、间隔约 9.5 小时，断面穿越必须人工复核。"],
+          ["P1","IMO 不是全量主键","100 条样本有 3 条 IMO 为空；主键优先使用记录 id，对象归并使用 MMSI。"],
+          ["P1","运动字段单位待确认","sog、cog、rot 和 length 在派生计算前必须查看字段说明状态。"]
+        ]
+      }
+    };
+
+    const presets = {
+      jordan: { dataset:"adsb", label:"约旦及周边", minLon:"34.0", maxLon:"40.0", minLat:"29.0", maxLat:"34.0", start:"2026-07-29T05:30:00", end:"2026-07-29T06:00:00", map:"jordan" },
+      "hormuz-air": { dataset:"adsb", label:"霍尔木兹周边航空", minLon:"54.5", maxLon:"58.0", minLat:"25.0", maxLat:"28.0", start:"2026-07-29T05:00:00", end:"2026-07-29T06:00:00", map:"hormuz" },
+      "hormuz-ship": { dataset:"ais", label:"霍尔木兹及周边海事", minLon:"54.0", maxLon:"58.5", minLat:"24.0", maxLat:"28.0", start:"2026-07-29T05:00:00", end:"2026-07-29T06:00:00", map:"hormuz" },
+      custom: { dataset:"adsb", label:"自定义范围", minLon:"34.0", maxLon:"40.0", minLat:"29.0", maxLat:"34.0", start:"2026-07-29T05:30:00", end:"2026-07-29T06:00:00", map:"jordan" }
+    };
+
+    const state = { dataset:"adsb", task:"region", mode:"guide", view:"map", inspector:"record", console:"request", language:"python", selected:0, timeline:4, playing:false, timer:null, tracks:true, points:true, history:[] };
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+    const els = {
+      app:$("#app"), preset:$("#preset"), minLon:$("#minLon"), maxLon:$("#maxLon"), minLat:$("#minLat"), maxLat:$("#maxLat"), start:$("#startTime"), end:$("#endTime"), identity:$("#identity"), identityLabel:$("#identityLabel"), identityCode:$("#identityCode"), loadToggle:$("#loadToggle"), loadFields:$("#loadFields"), startLoad:$("#startLoad"), endLoad:$("#endLoad"), pageSize:$("#pageSize"), sorts:$("#sorts"), autoSlice:$("#autoSlice"), sentence:$("#querySentence"), baseMap:$("#baseMap"), bbox:$("#bboxLayer"), tracks:$("#trackLayer"), points:$("#pointLayer"), tableHead:$("#tableHead"), tableBody:$("#tableBody"), inspectorBody:$("#inspectorBody"), inspectorTitle:$("#inspectorTitle"), inspectorSubtitle:$("#inspectorSubtitle"), request:$("#requestPreview"), response:$("#responsePreview"), code:$("#codePreview"), history:$("#historyPane"), diagnostics:$("#executionDiagnostics"), progress:$("#progress"), toast:$("#toast"), timeline:$("#timeline"), play:$("#playButton"), dialog:$("#architectureDialog")
+    };
+
+    function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
+    function data() { return datasets[state.dataset]; }
+    function compactTime(value) {
+      const compact = value.replace(/[-:T]/g, "");
+      return compact.length === 12 ? `${compact}00` : compact;
+    }
+    function showToast(message) { els.toast.textContent = message; els.toast.classList.add("is-visible"); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>els.toast.classList.remove("is-visible"),1800); }
+
+    function queryPayload() {
+      const d=data();
+      const payload={ startPubTime:compactTime(els.start.value), endPubTime:compactTime(els.end.value), minLon:Number(els.minLon.value), minLat:Number(els.minLat.value), maxLon:Number(els.maxLon.value), maxLat:Number(els.maxLat.value), pageNum:0, pageSize:Number(els.pageSize.value || 1000), sorts:els.sorts.value };
+      if (els.identity.value.trim()) payload[d.identityCode]=els.identity.value.trim();
+      if (els.loadToggle.checked) { payload.startLoadTime=compactTime(els.startLoad.value); payload.endLoadTime=compactTime(els.endLoad.value); }
+      return payload;
+    }
+
+    function validate() {
+      const p=queryPayload(), issues=[];
+      if (!p.startPubTime || !p.endPubTime) issues.push("观测开始和结束时间不能为空");
+      if (p.startPubTime>p.endPubTime) issues.push("观测开始时间不能晚于结束时间");
+      if (p.minLon>=p.maxLon || p.minLat>=p.maxLat) issues.push("矩形范围的最小值必须小于最大值");
+      if (els.loadToggle.checked && p.startLoadTime>p.endLoadTime) issues.push("开始入库时间不能晚于结束入库时间");
+      return issues;
+    }
+
+    function renderSentence() {
+      const d=data(), preset=presets[els.preset.value] || presets.custom, p=queryPayload(), issues=validate();
+      const object=els.identity.value.trim() ? `，只看 ${d.identityCode.toUpperCase()}=${escapeHtml(els.identity.value.trim())}` : "，查看范围内全部对象";
+      const load=els.loadToggle.checked ? `；并限定记录在 ${els.startLoad.value.replace("T"," ")} 到 ${els.endLoad.value.replace("T"," ")} 入库` : "";
+      els.sentence.innerHTML=issues.length ? `<strong style="color:var(--red)">参数需要修正：</strong>${escapeHtml(issues[0])}` : `<strong>将查询 ${preset.label}</strong>，观测时间 ${els.start.value.replace("T"," ")} 到 ${els.end.value.replace("T"," ")}${object}${load}。${els.autoSlice.checked ? "超过 1000 条时自动切片并去重。" : "当前未启用自动切片。"}`;
+      renderRequest();
+    }
+
+    function renderGrid() {
+      let lines=""; for(let x=0;x<=1000;x+=100) lines+=`<path class="grid-line" d="M${x} 0V620"/>`; for(let y=0;y<=620;y+=80) lines+=`<path class="grid-line" d="M0 ${y}H1000"/>`; $("#mapGrid").innerHTML=lines;
+    }
+
+    function renderBaseMap() {
+      const map=(presets[els.preset.value]||presets.custom).map;
+      if(map==="jordan") {
+        els.baseMap.innerHTML=`<path class="land" d="M0 0H1000V156L895 184L817 242L730 278L646 262L573 301L495 287L421 325L320 304L226 350L115 337L0 379Z"/><path class="land" d="M0 515L138 469L271 480L384 449L501 474L619 440L755 469L879 432L1000 456V620H0Z"/><path class="coast" d="M0 379L115 337L226 350L320 304L421 325L495 287L573 301L646 262L730 278L817 242L895 184L1000 156"/><text class="map-label" x="430" y="414">JORDAN</text><text class="map-label" x="676" y="366">IRAQ</text><text class="map-label" x="238" y="430">ISRAEL / PALESTINE</text><text class="water-label" x="88" y="475">GULF OF AQABA</text>`;
+        els.bbox.innerHTML=`<rect class="bbox" x="185" y="224" width="650" height="276"/><text class="water-label" x="198" y="216">BBOX 34–40E / 29–34N</text>`;
+      } else {
+        els.baseMap.innerHTML=`<path class="land" d="M0 0H1000V178L910 194L826 183L745 219L668 205L586 232L510 205L431 231L354 204L252 228L152 198L0 221Z"/><path class="land" d="M0 469L112 424L225 407L337 429L443 470L528 530L572 620H0Z"/><path class="land" d="M594 381L693 347L801 359L904 407L1000 465V620H724L680 540L634 473Z"/><path class="coast" d="M0 469L112 424L225 407L337 429L443 470L528 530"/><path class="coast" d="M594 381L693 347L801 359L904 407L1000 465"/><text class="map-label" x="640" y="162">IRAN</text><text class="map-label" x="263" y="510">UAE</text><text class="map-label" x="750" y="463">OMAN</text><text class="water-label" x="388" y="323">STRAIT OF HORMUZ</text><text class="water-label" x="665" y="302">GULF OF OMAN</text>`;
+        els.bbox.innerHTML=`<rect class="bbox" x="160" y="240" width="690" height="300"/><text class="water-label" x="173" y="232">BBOX ${els.minLon.value}–${els.maxLon.value}E / ${els.minLat.value}–${els.maxLat.value}N</text>`;
+      }
+    }
+
+    function renderMap() {
+      renderBaseMap(); const rows=data().rows.slice(0,state.timeline+2); let paths="";
+      const groups={}; rows.forEach(r=>{ const key=r[data().identityCode]; (groups[key]??=[]).push(r); });
+      Object.values(groups).forEach((group,index)=>{ if(group.length>1) paths+=`<path class="track ${state.dataset==='ais'?'ship':''} ${index%2?'secondary':''}" d="M${group.map(r=>`${r.x} ${r.y}`).join(' L')}"/>`; });
+      els.tracks.innerHTML=state.tracks?paths:"";
+      els.points.innerHTML=state.points?rows.map((r,i)=>`<g class="point ${state.dataset==='ais'?'ship':''} ${i===state.selected?'is-active':''}" data-point="${i}" transform="translate(${r.x} ${r.y})" style="animation-delay:${i*.07}s"><circle r="4"/><path d="M0 -11V-6M-11 0H-6M6 0H11M0 6V11" stroke="currentColor" opacity=".4"/></g>`).join(""):"";
+      $$('[data-point]').forEach(el=>el.addEventListener('click',()=>selectRecord(Number(el.dataset.point))));
+      const visible=Math.min(data().records,Math.round(data().records*(state.timeline+2)/8));
+      $("#timelineCurrent").textContent=`${rows.at(-1)?.[state.dataset==='adsb'?'receiveTime':'lastdyn'].slice(11) || '--'} · ${visible} / ${data().records} 条可见`;
+    }
+
+    function renderMetrics() { const d=data(); $("#metricRecords").textContent=d.records; $("#metricObjects").textContent=d.objects; $("#metricLatest").textContent=d.latest; $("#metricLatency").textContent=d.latency; const preset=presets[els.preset.value]||presets.custom; $("#mapSummaryTitle").textContent=`${preset.label} · ${d.label} 历史回放`; $("#mapSummaryCopy").textContent=`当前为示意结果。查询 ${els.start.value.replace('T',' ')}—${els.end.value.replace('T',' ')}，地图、表格、原始响应和字段检查器保持联动。`; }
+
+    function renderTable() {
+      const d=data(), isAir=state.dataset==='adsb';
+      const headers=isAir?["时间","ICAO","国家","经度","纬度","高度(m)","速度(km/h)","机型","入库时间"]:["时间","MMSI","船名","经度","纬度","SOG","COG","船型","入库时间"];
+      els.tableHead.innerHTML=`<tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr>`;
+      els.tableBody.innerHTML=d.rows.map((r,i)=>`<tr data-row="${i}" class="${i===state.selected?'is-active':''}">${isAir?`<td>${r.receiveTime}</td><td><strong>${r.icao}</strong></td><td>${r.country}</td><td>${r.lon}</td><td>${r.lat}</td><td>${r.height}</td><td>${r.speed}</td><td>${r.type}</td><td>${r.loadTime}</td>`:`<td>${r.lastdyn}</td><td><strong>${r.mmsi}</strong></td><td>${r.name}</td><td>${r.lon}</td><td>${r.lat}</td><td>${r.sog}</td><td>${r.cog}</td><td>${r.type}</td><td>${r.loadTime}</td>`}</tr>`).join("");
+      $$('[data-row]').forEach(row=>row.addEventListener('click',()=>selectRecord(Number(row.dataset.row))));
+    }
+
+    function renderQuality() {
+      const d=data(), q=d.quality; $("#qualityTitle").textContent=state.dataset==='adsb'?"这批数据适合做区域活动回放，不适合直接计算真实恢复率":"这批数据适合做区域存在与对象回溯，连续航迹需要密度门槛";
+      const rows=[["字段完整性",q.completeness,"主要字段"],["坐标范围",q.coordinate,"样本内"],["对象标识",q.identity,"ICAO / MMSI"],["轨迹密度",q.density,"需谨慎"],["数据新鲜度",q.freshness,"本次测试"]];
+      $("#qualityRows").innerHTML=rows.map(([n,v,note])=>`<div class="quality-row"><span>${n}</span><div class="bar"><i style="width:${v}%"></i></div><strong class="${v>=80?'state-ok':'state-warn'}">${v}% · ${note}</strong></div>`).join("");
+      $("#diagnosticList").innerHTML=d.diagnostics.map(([p,t,c])=>`<div class="diagnostic"><b>${p}</b><div><strong>${t}</strong><p>${c}</p></div></div>`).join("");
+    }
+
+    function selectRecord(index) { state.selected=Math.min(index,data().rows.length-1); renderMap(); renderTable(); renderInspector(); renderResponse(); }
+
+    function renderInspector() {
+      const d=data(), r=d.rows[state.selected] || d.rows[0];
+      els.inspectorTitle.textContent=state.dataset==='adsb'?`${r.icao} · ${r.planeType}`:`${r.name} · ${r.type}`;
+      els.inspectorSubtitle.textContent=`${r.id} · Mock 示例记录`;
+      if(state.inspector==='record') {
+        const entries=Object.entries(r).filter(([k])=>!['x','y'].includes(k));
+        els.inspectorBody.innerHTML=`<section class="inspector-section"><h3>原始字段</h3>${entries.map(([k,v])=>`<div class="kv"><span>${k}</span><strong title="${escapeHtml(v)}">${escapeHtml(v||'(空)')}</strong></div>`).join("")}</section><section class="inspector-section"><h3>快速判断</h3><div class="callout">这是示意记录。真实工具会保留源值、解析值和字段说明状态，不用地图折线替代连续航迹证据。</div></section>`;
+      } else if(state.inspector==='analysis') {
+        els.inspectorBody.innerHTML=`<section class="inspector-section"><h3>这条记录的质量</h3><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="quality-pill"><i></i>坐标有效</span><span class="quality-pill"><i></i>标识有效</span><span class="quality-pill"><i style="background:var(--amber)"></i>来源字段缺失</span></div></section><section class="inspector-section"><h3>时间关系</h3><div class="kv"><span>观测时间</span><strong>${r.receiveTime||r.lastdyn}</strong></div><div class="kv"><span>入库时间</span><strong>${r.loadTime}</strong></div><div class="kv"><span>时区</span><strong class="state-warn">待确认</strong></div></section><section class="inspector-section"><h3>下一步</h3><div class="next-actions"><button data-next="object">只查这个对象</button><button data-next="window">缩小到前后 15 分钟</button><button data-next="raw">查看原始响应</button></div></section>`;
+        $$('[data-next]').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.next==='object'){ els.identity.value=r[d.identityCode]; chooseTask('object'); renderSentence(); showToast('已回填对象标识'); } else if(b.dataset.next==='raw'){ setConsole('response'); } else showToast('已生成前后 15 分钟查询草稿'); }));
+      } else {
+        els.inspectorBody.innerHTML=`<section class="inspector-section"><h3>${d.label} 字段说明</h3><div class="field-dict">${d.fields.map(([k,c,s])=>`<div class="dict-row"><code>${k}</code><strong>${s}</strong><p>${c}</p></div>`).join("")}</div></section>`;
+      }
+    }
+
+    function renderRequest() {
+      const d=data(), p=queryPayload();
+      els.request.textContent=`POST /datas/api${d.endpoint}\nContent-Type: application/json\nTRSDH-Access-Token: ••••••••（由 Go 后端注入）\n\n${JSON.stringify(p,null,2)}\n\n# 工具执行策略\n${els.autoSlice.checked?'autoSlice: enabled · 单片最多 1000 条 · 按 id 去重':'autoSlice: disabled · 仅用于专家调试'}`;
+      renderCode();
+    }
+
+    function renderResponse() {
+      const d=data(), r=d.rows[state.selected]||d.rows[0];
+      els.response.textContent=JSON.stringify({ code:200, requestid:"mock-request-20260731-001", data:{ number:0, size:Number(els.pageSize.value||1000), numberOfElements:d.records, totalPages:1, totalElements:d.records, content:[r,"… Mock 省略其余记录 …"] } },null,2);
+    }
+
+    function renderCode() {
+      const d=data(), payload=JSON.stringify(queryPayload(),null,2);
+      const snippets={
+        python:`import httpx\n\npayload = ${payload}\nresponse = httpx.post(\n    "http://dh.trs.cn/datas/api${d.endpoint}",\n    json=payload,\n    headers={"TRSDH-Access-Token": token},\n    timeout=40.0,\n)\nbody = response.json()\nif str(body.get("code")) != "200":\n    raise RuntimeError(body)`,
+        go:`payloadJSON := []byte(\`${JSON.stringify(queryPayload())}\`)\nvar payload map[string]any\nif err := json.Unmarshal(payloadJSON, &payload); err != nil {\n    return err\n}\n// Go 服务统一注入 token、检查业务 code、切片和去重。\nresult, err := client.Query(ctx, "${d.endpoint}", payload)\nif err != nil {\n    return err\n}`,
+        curl:`curl -X POST \\\n  'http://dh.trs.cn/datas/api${d.endpoint}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'TRSDH-Access-Token: <由后端注入>' \\\n  --data '${JSON.stringify(queryPayload())}'`
+      };
+      els.code.textContent=snippets[state.language];
+    }
+
+    function renderHistory() {
+      const rows=state.history.length?state.history:[{time:"16:43:32",kind:"ADS-B",scope:"约旦及周边 · 30 min",count:"22",status:"成功"},{time:"16:41:08",kind:"AIS",scope:"霍尔木兹 · 60 min",count:"16",status:"成功"},{time:"16:39:50",kind:"ADS-B",scope:"入库窗口 · 15 min",count:"601",status:"自动切片"}];
+      els.history.innerHTML=rows.map((r,i)=>`<div class="history-row"><span>${r.time}</span><strong>${r.kind}</strong><span>${r.scope}</span><span>${r.count} 条</span><button data-rerun="${i}">${r.status}</button></div>`).join("");
+      $$('[data-rerun]').forEach(b=>b.addEventListener('click',()=>showToast('已恢复该次查询参数（Mock）')));
+    }
+
+    function renderDiagnostics() {
+      els.diagnostics.textContent=`[OK] 参数校验通过\n[OK] 登录状态有效，token 由 Go 后端管理\n[OK] HTTP 200 / 业务 code 200\n[OK] 坐标全部位于查询矩形内\n[OK] id 样本内唯一\n[WARN] 时间字段时区未说明，保留原值\n[WARN] ${state.dataset==='adsb'?'历史分页总数曾变化，已启用自动切片':'轨迹点密度偏低，断面穿越需人工复核'}\n[INFO] endLoadTime 已按“结束入库时间”处理\n[INFO] Mock 未发送真实网络请求`;
+    }
+
+    function runQuery() {
+      const issues=validate(); if(issues.length){ showToast(issues[0]); renderSentence(); return; }
+      $$('[data-run]').forEach(b=>{b.textContent='查询中…';b.classList.add('is-running');b.disabled=true;});
+      els.progress.style.width='36%'; $("#statusText").textContent='AUTH OK · QUERY RUNNING · VALIDATING RESPONSE';
+      setTimeout(()=>els.progress.style.width='72%',350);
+      setTimeout(()=>{
+        els.progress.style.width='100%'; state.selected=0; state.timeline=4; els.timeline.value=4;
+        state.history.unshift({time:new Date().toLocaleTimeString('zh-CN',{hour12:false}),kind:state.dataset==='adsb'?'ADS-B':'AIS',scope:`${presets[els.preset.value].label} · 当前窗口`,count:data().records,status:'成功'});
+        renderAll();
+        $$('[data-run]').forEach(b=>{b.textContent=b.closest('.left-run')?'运行并解释结果':'运行查询';b.classList.remove('is-running');b.disabled=false;});
+        $("#statusText").textContent=`QUERY COMPLETE · ${state.dataset.toUpperCase()} · ${data().records} RECORDS · 0 DUPLICATES AFTER MERGE`;
+        showToast(`查询完成：${data().records} 条记录，已生成质量诊断`);
+        setTimeout(()=>els.progress.style.width='0',500);
+      },900);
+    }
+
+    function chooseDataset(key, syncPreset=true) {
+      state.dataset=key; els.app.dataset.dataset=key; const d=data();
+      $$('[data-dataset]').forEach(b=>b.classList.toggle('is-active',b.dataset.dataset===key));
+      els.identityLabel.textContent=d.identityLabel; els.identityCode.textContent=d.identityCode; els.identity.placeholder=d.identityPlaceholder; els.identity.value='';
+      if(syncPreset){ els.preset.value=d.preset; applyPreset(d.preset,false); }
+      state.selected=0; renderAll();
+    }
+
+    function chooseTask(key) {
+      state.task=key; $$('[data-task]').forEach(b=>b.classList.toggle('is-active',b.dataset.task===key));
+      if(key==='object') els.identity.focus();
+      if(key==='increment'){ els.loadToggle.checked=true; els.loadFields.classList.add('is-visible'); }
+      if(key==='region'){ els.identity.value=''; }
+      renderSentence();
+    }
+
+    function applyPreset(key, syncDataset=true) {
+      const p=presets[key]; if(!p)return;
+      if(syncDataset && p.dataset!==state.dataset) chooseDataset(p.dataset,false);
+      els.minLon.value=p.minLon;els.maxLon.value=p.maxLon;els.minLat.value=p.minLat;els.maxLat.value=p.maxLat;els.start.value=p.start;els.end.value=p.end;
+      renderAll();
+    }
+
+    function setView(view) { state.view=view; $$('[data-view]').forEach(b=>b.classList.toggle('is-active',b.dataset.view===view)); $$('[data-view-panel]').forEach(p=>p.classList.toggle('is-active',p.dataset.viewPanel===view)); }
+    function setInspector(tab) { state.inspector=tab; $$('[data-inspector]').forEach(b=>b.classList.toggle('is-active',b.dataset.inspector===tab)); renderInspector(); }
+    function setConsole(tab) { state.console=tab; $$('[data-console]').forEach(b=>b.classList.toggle('is-active',b.dataset.console===tab)); $$('[data-console-panel]').forEach(p=>p.classList.toggle('is-active',p.dataset.consolePanel===tab)); }
+
+    function renderAll() { renderSentence(); renderGrid(); renderMap(); renderMetrics(); renderTable(); renderQuality(); renderInspector(); renderResponse(); renderHistory(); renderDiagnostics(); }
+
+    $$('[data-mode]').forEach(b=>b.addEventListener('click',()=>{ state.mode=b.dataset.mode; els.app.dataset.mode=state.mode; $$('[data-mode]').forEach(x=>x.classList.toggle('is-active',x===b)); showToast(state.mode==='guide'?'已切换到新手模式':'已显示原始分页、排序和切片控制'); }));
+    $$('[data-dataset]').forEach(b=>b.addEventListener('click',()=>chooseDataset(b.dataset.dataset)));
+    $$('[data-task]').forEach(b=>b.addEventListener('click',()=>chooseTask(b.dataset.task)));
+    $$('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+    $$('[data-inspector]').forEach(b=>b.addEventListener('click',()=>setInspector(b.dataset.inspector)));
+    $$('[data-console]').forEach(b=>b.addEventListener('click',()=>setConsole(b.dataset.console)));
+    $$('[data-language]').forEach(b=>b.addEventListener('click',()=>{state.language=b.dataset.language;$$('[data-language]').forEach(x=>x.classList.toggle('is-active',x===b));renderCode();}));
+    $$('[data-run]').forEach(b=>b.addEventListener('click',runQuery));
+    $$('input, select').forEach(input=>input.addEventListener('input',renderSentence));
+    els.preset.addEventListener('change',()=>applyPreset(els.preset.value));
+    els.loadToggle.addEventListener('change',()=>{els.loadFields.classList.toggle('is-visible',els.loadToggle.checked);renderSentence();});
+    els.timeline.addEventListener('input',()=>{state.timeline=Number(els.timeline.value);renderMap();});
+    els.play.addEventListener('click',()=>{ if(state.playing){clearInterval(state.timer);state.playing=false;els.play.textContent='▶';return;} state.playing=true;els.play.textContent='Ⅱ';state.timer=setInterval(()=>{state.timeline=state.timeline>=6?1:state.timeline+1;els.timeline.value=state.timeline;renderMap();},700); });
+    $$('[data-layer]').forEach(b=>b.addEventListener('click',()=>{const key=b.dataset.layer;state[key]=!state[key];b.classList.toggle('is-active',state[key]);renderMap();}));
+    $("#fitBounds").addEventListener('click',()=>showToast('已适配当前查询矩形'));
+    $("#drawBbox").addEventListener('click',()=>{els.preset.value='custom';showToast('地图框选模式：拖拽后回填四个边界值（Mock）');});
+    $("#exportData").addEventListener('click',()=>showToast('已生成脱敏 CSV 导出任务（Mock）'));
+    $("#healthCheck").addEventListener('click',()=>{setConsole('diagnostics');showToast('连接、登录、ADS-B、AIS 和响应契约检测通过（Mock）');});
+    $("#resetQuery").addEventListener('click',()=>{els.preset.value=data().preset;applyPreset(data().preset);chooseTask('region');showToast('已恢复推荐参数');});
+    $("#copyConsole").addEventListener('click',()=>{const active=$('[data-console-panel].is-active');navigator.clipboard?.writeText(active?.innerText||'');showToast('已复制当前面板内容');});
+    $("#collapseConsole").addEventListener('click',()=>showToast('正式实现支持拖拽高度和收起；Mock 保持完整展示'));
+    $("#openArchitecture").addEventListener('click',()=>els.dialog.showModal());
+    $("#closeArchitecture").addEventListener('click',()=>els.dialog.close());
+    els.dialog.addEventListener('click',event=>{if(event.target===els.dialog)els.dialog.close();});
+    document.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter')runQuery();if(event.key==='Escape'&&els.dialog.open)els.dialog.close();});
+
+    renderAll();
+  </script>
+</body>
+</html>
