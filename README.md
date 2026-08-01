@@ -20,7 +20,7 @@
 | [`devdoc/DYINT四场景本体数据与分析方案.md`](devdoc/DYINT四场景本体数据与分析方案.md) | 基于钉钉文档 `DYINT-Demo` 进一步拆解 4 个演示场景、本体、数据、推理能力和建设路线 | 4 |
 | [`devdoc/DYINT多源情报研判驱动的自演化本体模型方案-20260731.md`](devdoc/DYINT多源情报研判驱动的自演化本体模型方案-20260731.md) | 从多源核验、研判、预测、预警和行动建议反推可运行、可版本化、受控自演化的本体模型 | 5 |
 | [`devdoc/飞机与船舶航迹数据服务API实测与高效接入指南-20260731.md`](devdoc/飞机与船舶航迹数据服务API实测与高效接入指南-20260731.md) | 记录 ADS-B/AIS 接口的真实调用、字段、分页、延迟、质量边界和 Python/Go 高效接入方式 | 6 |
-| [API 探索工具交互 Mock（已迁至 `dy-track-explorer`）](http://gitlab.devdemo.trs.net.cn/trs-gint/dy-track-explorer/-/blob/main/docs/prototypes/飞机与船舶航迹数据API探索工具交互Mock.html) | 本仓不再维护该实现原型；这里只保留需求和实测背景 | 7 |
+| [航迹数据探索与采集管理平台交互 Mock（已迁至 `dy-track-explorer`）](http://gitlab.devdemo.trs.net.cn/trs-gint/dy-track-explorer/-/blob/main/docs/prototypes/航迹数据探索与采集管理平台交互Mock.html) | 本仓不再维护该实现原型；这里只保留需求和实测背景 | 7 |
 | [`devdoc/航迹数据API探索与采集工具技术方案及实施计划-20260731.md`](devdoc/航迹数据API探索与采集工具技术方案及实施计划-20260731.md) | 将已确认 Mock 落地为 Go 模块化单体与 React 应用，并规划周期采集、本地存储、管理和监控的扩展边界及分阶段实施路径 | 8 |
 | [`AGENTS.md`](AGENTS.md) | 给后续 Codex/Agent 的项目内工作规则，说明关联项目、边界、术语、证据和 Git 操作要求 | 0 |
 
