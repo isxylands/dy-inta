@@ -1,0 +1,4 @@
+interface:
+  display_name: "OSINT 数据查询与查证"
+  short_description: "查询并交叉查证 OSINT、授权信号与项目航迹数据"
+  default_prompt: "Use $osint-data-verification to query and verify this OSINT claim with reproducible evidence."
