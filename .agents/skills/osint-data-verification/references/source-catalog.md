@@ -63,14 +63,14 @@
 | NASA Black Marble | 夜间灯光变化 | `待查询`；先建立同星期多日基线 |
 | ASF/Copernicus/UNOSAT SAR products | `gintbroker` SAR 目录和产品能力 | `实现审计`；需单独核对许可、token、成本和处理链 |
 
-## 5. 网络、射频和公开信号
+## 5. 网络、公开信号和遥测线索
 
 | 数据源 | 历史用途 | 状态与经验 |
 | --- | --- | --- |
 | IODA | 国家级 BGP/主动探测中断告警 | `实际查询`；国家级异常不能自动归因为攻击或管制，需地区、ASN 和第二来源 |
 | RIPE Atlas | 网络中断第二观测面 | `实现审计`；历史案例未单独形成查询台账 |
 | Cloudflare Radar | 网络中断第三来源候选 | `待接入` |
-| KiwiSDR、SatNOGS、TinyGS、PSK Reporter | 公开 SDR、卫星地面站和业余无线电聚合 | `gintbroker 实现审计`；属于 OSINT/SIGINT 辅助层，必须遵守隐私、许可和非实时敏感目标边界 |
+| KiwiSDR、SatNOGS、TinyGS、PSK Reporter | 公开 SDR、卫星地面站和业余无线电聚合 | `gintbroker 实现审计`；按公开信号 OSINT 线索处理，不自动标记为传统 SIGINT；必须遵守隐私、许可和非实时敏感目标边界 |
 | APRS、Meshtastic、JS8Call | 公开 mesh/radio 节点 | `gintbroker 实现审计`；适合灾害和通信韧性，不用于人员或敏感目标跟踪 |
 | OpenMHZ、Broadcastify | 公开公共安全音频聚合 | `gintbroker 实现审计`；需核验地区法律和服务条款 |
 
@@ -85,15 +85,13 @@
 | OFAC/US Treasury | 制裁和实体风险 | Treasury 已 `实际查询`；OFAC 统一实体层为 `待增强` |
 | IMF、World Bank、WTO、BIS | 地缘经济慢速层 | `WorldMonitor/仓内对照审计`，未用于本轮事件实时查询 |
 
-## 7. 项目内和内网保存的航迹数据
+## 7. 内网保存的航迹数据
 
-详细查询合同见 `trajectory-query-playbook.md`。历史上实际检查过三种载体：
+详细查询合同见 `trajectory-query-playbook.md`。本 skill 的内部航迹查询面只保留一条：
 
-1. 外接盘海贝 AIS/ADS-B CSV：约 16GB、1.73 亿数据行级；适合历史基线和离线派生，不适合反复交互全扫。
-2. `dh.trs.cn` 航迹数据服务：ADS-B 与 AIS 历史查询接口；实测过字段、gzip、分页、延迟、`endLoadTime` 和零结果边界。
-3. 航迹数据工作台 SQLite：`dy-track-explorer` 在 195 环境的已采集快照；实际用于三事件的窗口聚合、对象下钻、字段质量和入库延迟复核。
+- 195 环境航迹数据工作台 SQLite：`dy-track-explorer` 的已采集快照；实际用于三事件的窗口聚合、对象下钻、字段质量和入库延迟复核。优先使用其只读 API，复杂聚合才使用明确只读的 SQLite 连接或一致性只读副本。
 
-三者均不能称为“官方航迹数据”。上游提供方、原始采集链、许可和覆盖需单独审计。
+该工作台不能称为“官方航迹数据”。上游提供方、原始采集链、许可、覆盖和知识截止时间仍需单独审计。不要把其他历史载体自动加入查询范围；用户若明确指定新的已授权内部数据源，应先单独确认权限、用途和查询合同，再决定是否扩展本 skill。
 
 ## 8. 只做过实现审计的相邻项目来源
 
