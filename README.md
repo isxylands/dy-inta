@@ -28,7 +28,7 @@
 
 | 目录 | 作用 |
 | --- | --- |
-| [`tools/feishu-doc-crawler`](tools/feishu-doc-crawler) | 基于 `crawl4ai` 抓取飞书豆包智能纪要和原始记录；包含 iframe 虚拟滚动、逐字稿/说话人接口适配、完整性检查和 SHA-256 manifest |
+| [`tools/feishu-doc-crawler`](tools/feishu-doc-crawler) | 基于 `crawl4ai` 抓取飞书豆包智能纪要和原始记录；项目根目录提供一键脚本 `crawler_feishu_doc.sh`，包含 iframe 虚拟滚动、逐字稿/说话人接口适配、完整性检查和 SHA-256 manifest |
 
 ## 关联材料与路径
 

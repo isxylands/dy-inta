@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
+from feishu_doc_crawler.cli import build_parser
 from feishu_doc_crawler.crawler import chrome_user_agent, validate_source_url
 from feishu_doc_crawler.parsers import (
     choose_complete_transcript_payload,
@@ -14,6 +16,19 @@ from feishu_doc_crawler.parsers import (
 
 
 class AdapterTests(unittest.TestCase):
+    def test_output_defaults_to_current_directory(self) -> None:
+        args = build_parser().parse_args(
+            ["https://feishu.doubao.com/docx/Abc123"]
+        )
+        self.assertEqual(args.output, Path.cwd())
+
+    def test_output_accepts_relative_and_absolute_paths(self) -> None:
+        url = "https://feishu.doubao.com/docx/Abc123"
+        relative = build_parser().parse_args([url, "--output", "./result"])
+        absolute = build_parser().parse_args([url, "--output", "/tmp/result"])
+        self.assertEqual(relative.output, Path("./result"))
+        self.assertEqual(absolute.output, Path("/tmp/result"))
+
     def test_validates_source_url(self) -> None:
         url = "https://feishu.doubao.com/docx/Abc123"
         self.assertEqual(validate_source_url(url), url)

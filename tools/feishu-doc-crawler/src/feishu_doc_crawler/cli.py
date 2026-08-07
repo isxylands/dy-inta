@@ -11,10 +11,16 @@ from .output import write_artifacts
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
+        prog="crawler_feishu_doc.sh",
         description="完整抓取飞书豆包智能纪要和原始记录"
     )
     parser.add_argument("url", help="https://feishu.doubao.com/docx/... 文档链接")
-    parser.add_argument("--output", required=True, type=Path, help="输出目录")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path.cwd(),
+        help="输出目录，支持绝对或相对路径；默认为当前目录",
+    )
     parser.add_argument("--user-agent", help="显式覆盖真实 Chrome User-Agent")
     parser.add_argument(
         "--storage-state", type=Path, help="用户已授权导出的 Playwright storage state"

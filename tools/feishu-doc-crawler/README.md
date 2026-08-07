@@ -23,30 +23,55 @@ python -c "import importlib.metadata; print(importlib.metadata.version('crawl4ai
 
 ## 使用
 
-从本目录运行：
+在项目根目录直接调用一键脚本：
 
 ```bash
-PYTHONPATH=src python -m feishu_doc_crawler \
-  'https://feishu.doubao.com/docx/文档Token' \
-  --output /absolute/path/to/output
+./crawler_feishu_doc.sh 'https://feishu.doubao.com/docx/文档Token'
 ```
 
-默认自动读取本机 Chrome 版本并构造匹配的 User-Agent。也可以显式指定：
+从其他目录调用时使用脚本的绝对路径，输出默认落在当时的当前目录：
 
 ```bash
-PYTHONPATH=src python -m feishu_doc_crawler \
+/Users/liushen/Documents/githubDevs/dy-inta/crawler_feishu_doc.sh \
+  'https://feishu.doubao.com/docx/文档Token'
+```
+
+不传 `--output` 时，结果写入调用脚本时的当前目录。绝对路径和相对路径均可：
+
+```bash
+./crawler_feishu_doc.sh \
   'https://feishu.doubao.com/docx/文档Token' \
-  --output /absolute/path/to/output \
+  --output ./feishu-output
+
+./crawler_feishu_doc.sh \
+  'https://feishu.doubao.com/docx/文档Token' \
+  --output /absolute/path/to/feishu-output
+```
+
+脚本自动定位项目源码，并优先使用当前 `python`；如果当前 Python 没有安装 `crawl4ai`，会尝试已配置的 `pyenv 3.11.7`。也可通过 `CRAWLER_FEISHU_PYTHON` 显式指定 Python。
+
+默认自动读取本机 Chrome 版本并构造匹配的 User-Agent。其他参数会原样透传，例如显式 User-Agent：
+
+```bash
+./crawler_feishu_doc.sh \
+  'https://feishu.doubao.com/docx/文档Token' \
   --user-agent 'Mozilla/5.0 (...) Chrome/151.0.7922.108 Safari/537.36'
 ```
 
 如果文档需要登录，只能使用用户已授权导出的 Playwright storage state：
 
 ```bash
-PYTHONPATH=src python -m feishu_doc_crawler \
+./crawler_feishu_doc.sh \
   'https://feishu.doubao.com/docx/文档Token' \
-  --output /absolute/path/to/output \
   --storage-state /absolute/path/to/storage-state.json
+```
+
+底层 Python 入口仍可直接调用，其 `--output` 同样是可选参数：
+
+```bash
+PYTHONPATH=tools/feishu-doc-crawler/src \
+  python -m feishu_doc_crawler \
+  'https://feishu.doubao.com/docx/文档Token'
 ```
 
 工具不会尝试绕过登录、权限控制或验证码，也不会自动读取个人 Chrome profile。
