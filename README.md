@@ -24,6 +24,12 @@
 | [`devdoc/航迹数据API探索与采集工具技术方案及实施计划-20260731.md`](devdoc/航迹数据API探索与采集工具技术方案及实施计划-20260731.md) | 将已确认 Mock 落地为 Go 模块化单体与 React 应用，并规划周期采集、本地存储、管理和监控的扩展边界及分阶段实施路径 | 8 |
 | [`AGENTS.md`](AGENTS.md) | 给后续 Codex/Agent 的项目内工作规则，说明关联项目、边界、术语、证据和 Git 操作要求 | 0 |
 
+## 辅助工具
+
+| 目录 | 作用 |
+| --- | --- |
+| [`tools/feishu-doc-crawler`](tools/feishu-doc-crawler) | 基于 `crawl4ai` 抓取飞书豆包智能纪要和原始记录；包含 iframe 虚拟滚动、逐字稿/说话人接口适配、完整性检查和 SHA-256 manifest |
+
 ## 关联材料与路径
 
 | 对象 | 路径或标识 | 关系 |

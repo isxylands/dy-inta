@@ -41,6 +41,7 @@
 | `moye-v4-product` | `/Users/liushen/Documents/cursorDevs/moye-v4-product` | 数据中台后端，负责数据源连接、ODS/DWD、批处理、流处理、存储生命周期、数据服务和对外 Open API | 默认只读；适合承接规范数据源接入和加工 |
 | PRD PDF | `~/Documents/非Coding工作/DYINT/O多源情报系统/多源情报分析平台PRD_v6.0.pdf` | PRD 原始来源 | 需要核对原文时读取 |
 | 钉钉文档 `DYINT-Demo` | 节点 `b9Y4gmKWrdgOmQNdC43lQN6dJGXn6lpz` | 演示事件包来源 | 需要最新内容时用钉钉文档工具读取 |
+| 飞书纪要抓取适配器 | `tools/feishu-doc-crawler` | 基于 `crawl4ai` 抓取已授权的飞书豆包纪要和原始记录 | 运行输出不得提交；完整性以块 JSON、逐字稿原始 JSON、校验报告和 manifest 为准 |
 
 三类后端的推荐关系：
 
